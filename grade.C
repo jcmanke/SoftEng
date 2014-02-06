@@ -1,44 +1,88 @@
 #include <iostream>
+#include <stdlib.h>
+#include <vector>
 #include <fstream>
 #include <string>
-
+#include <omp.h>
 
 
 using namespace std;
 
 
-ofstream openLogFile( char * filename )
-{
-    ofstream fout;
+void CompileSourceFile ( string name );
+void FindTests ( vector<string> &testVector );
+void OpenLogFile( ofstream & fout, string fileName );
+void UsageMenu();
 
-    string file = filename + ".log";
-    
-    fout.open(file.c_str());
-
-    if (!fout)
-        fout = NULL;
-    return fout;
-}
-
-void findTests (vector<string> &testVector)
-{
-    //traverse all directories
-}
 
 int main( int argc, char * argv[] )
 {
-
+    int threadCount = 0;
+    
     ofstream logFout;
     vector<string> testVector;
+    string target = argv[1];
 
-    logFout = openLog(argv[1]);
+    #pragma omp master
+    {
+        threadCount = omp_get_num_procs() - 2 <= 0 ? 1 : omp_get_num_procs() - 2;
+    }
 
-    if ( logFout == NULL )
+    if (argc != 2)
+    {
+        UsageMenu();
+        return 1;
+    }
+
+    OpenLogFile(logFout, target);
+    CompileSourceFile( target );
+
+    if ( !logFout ) // not java so we don't need this compare
     {
         cout << "Error opening log file." << endl;
         return -1;
     }
 
-    findTests(testVector);
+    FindTests(testVector);
 
+    // debug;
+    cout << threadCount << endl;
+
+    return 0;
+}
+
+void FindTests (vector<string> &testVector)
+{
+    //traverse all directories
+}
+
+
+void OpenLogFile( ofstream & fout, string fileName )
+{
+
+    string file = fileName + ".log";
+
+    fout.open(file.c_str());
+
+//    if (!fout)  should be null if bad ptr
+//        fout = NULL;
+}
+
+void CompileSourceFile ( string name )
+{
+    int index = name.find_last_of(".C");
+    // if not found, try cpp
+    if (index == -1)
+    {
+        index = name.find_last_of(".cpp");
+    }
+
+    // compile the prog
+    string cmd = "g++ -o " + name.substr(0,index-1) + " " + name + " -g ";
+    system(cmd.c_str());
+}
+
+void UsageMenu()
+{
+    cout << "Please re-run as './grade <source to test>'" << endl << endl;
 }
