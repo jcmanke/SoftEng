@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <omp.h>
+#include <dirent.h>
 
 
 using namespace std;
@@ -15,12 +16,15 @@ void OpenLogFile( ofstream & fout, string fileName );
 void UsageMenu();
 
 
+vector<string> TESTVECTOR;
+struct dirent *ITEM;
+
 int main( int argc, char * argv[] )
 {
     int threadCount = 0;
-    
+
     ofstream logFout;
-    vector<string> testVector;
+//    vector<string> testVector;
     string target = argv[1];
 
     #pragma omp master
@@ -43,7 +47,11 @@ int main( int argc, char * argv[] )
         return -1;
     }
 
-    FindTests(testVector);
+    #pragma omp parallel num_threads(threadCount)
+    {
+        FindTests(testVector);
+
+    }
 
     // debug;
     cout << threadCount << endl;
@@ -51,22 +59,6 @@ int main( int argc, char * argv[] )
     return 0;
 }
 
-void FindTests (vector<string> &testVector)
-{
-    //traverse all directories
-}
-
-
-void OpenLogFile( ofstream & fout, string fileName )
-{
-
-    string file = fileName + ".log";
-
-    fout.open(file.c_str());
-
-//    if (!fout)  should be null if bad ptr
-//        fout = NULL;
-}
 
 void CompileSourceFile ( string name )
 {
@@ -80,6 +72,37 @@ void CompileSourceFile ( string name )
     // compile the prog
     string cmd = "g++ -o " + name.substr(0,index-1) + " " + name + " -g ";
     system(cmd.c_str());
+}
+
+void FindTests ()
+{   
+    // c ish, sorry
+    char[1024] = cwd;
+    getcwd(cwd, sizeof(cwd));
+    // error
+    if (!cwd)
+    {
+        TESTVECTOR = NULL;
+        return;
+    }
+
+    string root = cwd;
+    DIR *dir;
+      
+    //traverse all directories
+
+}
+
+
+void OpenLogFile( ofstream & fout, string fileName )
+{
+
+    string file = fileName + ".log";
+
+    fout.open(file.c_str());
+
+//    if (!fout)  should be null if bad ptr
+//        fout = NULL;
 }
 
 void UsageMenu()
