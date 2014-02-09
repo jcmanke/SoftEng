@@ -40,21 +40,26 @@ int main( int argc, char * argv[] )
         return 1;
     }
 
-    OpenLogFile(logFout, target);
-    CompileSourceFile( target );
 
+    // debug; You can try to parallelize things, but I think this stays serial
+    #pragma omp master //parallel num_threads(threadCount)
+    {
+        FindTests();
+    }
+
+    //#pragma omp parallel num_threads(threadCount - 1)
+    //{
+        OpenLogFile(logFout, target);
+        CompileSourceFile( target );
+    //}
+
+    //#pragma omp barrier
     if ( !logFout )
     {
         cout << "Error opening log file." << endl;
         return -1;
-    }
-    
-    // debug; You can try to parallelize things, but I think this stays serial
-    //#pragma omp parallel num_threads(threadCount)
-    {
-        FindTests();
-    }
-    
+    }  
+       
     if ( TESTVECTOR.empty() )
     {
         //no tests found, do something
@@ -62,10 +67,10 @@ int main( int argc, char * argv[] )
     }
     
     // debug;
-    //for ( int i = 0; i < TESTVECTOR.size(); i++ )
-        //cout << TESTVECTOR[i] << endl;
+    for ( int i = 0; i < TESTVECTOR.size(); i++ )
+        cout << TESTVECTOR[i] << endl;
     // debug;
-    // cout << threadCount << endl;
+    cout << threadCount << endl;
 
     return 0;
 }
