@@ -26,13 +26,6 @@ int main( int argc, char * argv[] )
     int threadCount = 0;
 
     ofstream logFout;
-    string target = argv[1];
-
-    #pragma omp master
-    {
-        // debug; You made a damn ? line!!
-        threadCount = omp_get_num_procs() - 2 <= 0 ? 1 : omp_get_num_procs() - 2;
-    }
 
     if (argc != 2)
     {
@@ -40,6 +33,15 @@ int main( int argc, char * argv[] )
         return 1;
     }
 
+
+
+    string target = argv[1];
+
+    #pragma omp master
+    {
+        // debug; You made a damn ? line!!
+        threadCount = omp_get_num_procs() - 2 <= 0 ? 1 : omp_get_num_procs() - 2;
+    }
 
     // debug; You can try to parallelize things, but I think this stays serial
     #pragma omp master //parallel num_threads(threadCount)
