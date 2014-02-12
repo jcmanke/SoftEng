@@ -111,6 +111,7 @@ void ExecuteTests(string prog)
         string outFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "out";
         // Execute code against test case
         string cmdString = "./" + prog + " < " + inFile + " > " + outFile;
+        cmdString += " > /dev/null";
         system( cmdString.c_str() );
     }
     
@@ -120,7 +121,7 @@ void ExecuteTests(string prog)
         string ansFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "ans";
         string outFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "out";
         // compare
-        string cmd = "diff " + ansFile + " " + outFile;
+        string cmd = "diff " + ansFile + " " + outFile + " > /dev/null";
         string diff = diffCall(cmd);
         // if diff's length is 0, there is no difference in the files...
         // however the system likes to give /177 as an empty or delete string
