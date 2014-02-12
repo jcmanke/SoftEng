@@ -3,7 +3,6 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include <omp.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <ctime>
@@ -15,7 +14,6 @@ void CompileSourceFile ( string &name );
 string diffCall(string cmd);
 void ExecuteTests(string prog);
 void FindTests ();
-void OpenLogFile( ofstream & fout, string fileName );
 void UsageMenu();
 void ParseDirectory(string root);
 void WriteLog(string prog);
@@ -41,25 +39,11 @@ int main( int argc, char * argv[] )
 
     string target = argv[1];
 
-    #pragma omp master
-    {
-        // debug; You made a damn ? line!!
-        threadCount = omp_get_num_procs() - 2 <= 0 ? 1 : omp_get_num_procs() - 2;
-    }
-
-    // debug; You can try to parallelize things, but I think this stays serial
-    #pragma omp master //parallel num_threads(threadCount)
-    {
-        FindTests();
-    }
-
-    //#pragma omp parallel num_threads(threadCount - 1)
-    //{
-//        OpenLogFile(logFout, target);
-        CompileSourceFile( target );
-    //}
-
-    //#pragma omp barrier
+    
+    FindTests();
+    
+    CompileSourceFile( target );
+    
     if ( !logFout )
     {
         cout << "Error opening log file." << endl;
@@ -121,8 +105,6 @@ string diffCall(string cmd)
 
 void ExecuteTests(string prog)
 {
-    // Start execution in parallel
- //   #pragma omp for  
     for (int i = 0; i < TESTVECTOR.size(); i+=1)
     {
         string inFile = TESTVECTOR[i];
@@ -133,8 +115,6 @@ void ExecuteTests(string prog)
     }
     
 
-    // do parallel compares
- //   #pragma omp for
     for (int i = 0; i < TESTVECTOR.size(); i+=1)
     {
         string ansFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "ans";
@@ -221,17 +201,6 @@ void ParseDirectory(string root)
 
 }
 
-
-void OpenLogFile( ofstream & fout, string fileName )
-{
-
-    string file = fileName + ".log";
-
-    fout.open(file.c_str());
-
-//    if (!fout)  should be null if bad ptr
-//        fout = NULL;
-}
 
 void UsageMenu()
 {
