@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <ctime>
+#include <sstream>
 
 using namespace std;
 
@@ -100,18 +101,20 @@ string diffCall(string cmd)
     //cout << cmd << endl << returnString << endl;
     // close pipe
     pclose(diff);
+
     return returnString;
 }
 
 void ExecuteTests(string prog)
 {
+    stringstream ss;
     for (int i = 0; i < TESTVECTOR.size(); i+=1)
     {
         string inFile = TESTVECTOR[i];
         string outFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "out";
         // Execute code against test case
         string cmdString = "./" + prog + " < " + inFile + " > " + outFile;
-        cmdString += " > /dev/null";
+        cmdString += " | > /dev/null";
         system( cmdString.c_str() );
     }
     
@@ -122,10 +125,13 @@ void ExecuteTests(string prog)
         string outFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "out";
         // compare
         string cmd = "diff " + ansFile + " " + outFile + " > /dev/null";
-        string diff = diffCall(cmd);
+//        string diff = diffCall(cmd);
+        int diff = system(cmd.c_str());
+        // convert to string
+        ss << diff;
         // if diff's length is 0, there is no difference in the files...
         // however the system likes to give /177 as an empty or delete string
-        if ( (diff.find("\n") != -1 && diff.length() == 1)|| diff.find("\177") != -1 )
+        if ( diff == 0)
         {
             int index = TESTVECTOR[i].find_last_of(".tst");
             TESTVECTOR[i] = TESTVECTOR[i].substr(0,index) + ": succeeded perfectly\n";
@@ -134,7 +140,7 @@ void ExecuteTests(string prog)
         else 
         {
             int index = TESTVECTOR[i].find_last_of(".tst");
-            TESTVECTOR[i] = TESTVECTOR[i].substr(0,index) + ": has errors - " + diff +"\n";
+            TESTVECTOR[i] = TESTVECTOR[i].substr(0,index) + ": has discrepancies\n";
         }
     }
     
