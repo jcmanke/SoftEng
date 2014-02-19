@@ -11,7 +11,7 @@
 using namespace std;
 
 
-void CompileSourceFile ( string &name );
+string CompileSourceFile ( string name );
 string diffCall(string cmd);
 void ExecuteTests(string prog);
 void FindTests ();
@@ -26,24 +26,19 @@ struct dirent *ITEM;
 
 int main( int argc, char * argv[] )
 {
-    int threadCount = 0;
-
     ofstream logFout;
-
+    string target, sourceFile;
     if (argc != 2)
     {
         UsageMenu();
         return 1;
     }
 
-
-
-    string target = argv[1];
-
+    sourceFile = argv[1];
     
     FindTests();
     
-    CompileSourceFile( target );
+    target = CompileSourceFile( sourceFile );
     
     if ( !logFout )
     {
@@ -60,13 +55,13 @@ int main( int argc, char * argv[] )
     
     ExecuteTests( target );
 
-    WriteLog( target );
+    WriteLog( sourceFile );
 
     return 0;
 }
 
-
-void CompileSourceFile ( string &name )
+//returns shortened name
+string CompileSourceFile ( string name )
 {
     int index = name.find_last_of(".C");
     // if not found, try cpp
@@ -75,12 +70,12 @@ void CompileSourceFile ( string &name )
         index = name.find_last_of(".cpp");
     }
 
+    string baseName = name.substr(0,index);
     // compile the prog
-    string cmd = "g++ -o " + name.substr(0,index) + " " + name + " -g ";
+    string cmd = "g++ -o " + baseName + " " + name + " -g ";
     system(cmd.c_str());
-
-    // rename prog for later
-    name = name.substr(0,index);
+    
+    return baseName;
 }
 
 string diffCall(string cmd)
@@ -108,24 +103,21 @@ string diffCall(string cmd)
 void ExecuteTests(string prog)
 {
     stringstream ss;
-    for (int i = 0; i < TESTVECTOR.size(); i+=1)
+    string inFile, outFile, ansFile;
+    for (int i = 0; i < TESTVECTOR.size(); i++)
     {
-        string inFile = TESTVECTOR[i];
-        string outFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "out";
+        inFile = TESTVECTOR[i];
+        outFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "out";
+        ansFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "ans";
+
         // Execute code against test case
         string cmdString = "./" + prog + " < " + inFile + " > " + outFile;
         cmdString += " | > /dev/null";
         system( cmdString.c_str() );
-    }
     
-
-    for (int i = 0; i < TESTVECTOR.size(); i+=1)
-    {
-        string ansFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "ans";
-        string outFile = TESTVECTOR[i].substr(0,TESTVECTOR[i].length() - 3) + "out";
         // compare
         string cmd = "diff " + ansFile + " " + outFile + " > /dev/null";
-//        string diff = diffCall(cmd);
+        //string diff = diffCall(cmd);
         int diff = system(cmd.c_str());
         // convert to string
         ss << diff;
@@ -183,29 +175,26 @@ void ParseDirectory(string root)
     while (entry = readdir(dir)) // notice the single '='
     {
         temp = entry->d_name;
-        if ( temp != "." )
+        if ( temp != "." && temp != ".." )
         {
-            if ( temp != ".." )
+            if ( temp[temp.size() - 1] != '~' )
             {
-                if ( temp[temp.size() - 1] != '~' )
+                int length = temp.length();
+                if ( length > 4 && temp.substr(length-4) == ".tst")
+                    /*temp[length-1] == 't' && temp[length-2] 
+                    == 's' && temp[length-3] == 't' && temp[length-4] == '.' )*/
                 {
-                    int length = temp.length();
-                    if ( length > 4 && temp[length-1] == 't' && temp[length-2] 
-                        == 's' && temp[length-3] == 't' && temp[length-4] == '.' )
-                    {
-                        TESTVECTOR.push_back(root+'/'+temp);
-                    }
-                    else
-                    {
-                        ParseDirectory(root+'/'+temp);
-                    }
+                    TESTVECTOR.push_back(root+'/'+temp);
+                }
+                else
+                {
+                    ParseDirectory(root+'/'+temp);
                 }
             }
         }
     }
     
     closedir(dir);
-
 }
 
 
@@ -220,9 +209,11 @@ void WriteLog(string prog)
     time_t now;
     time(&now);
     string currTime = ctime(&now);
-    string name = prog + " " + currTime.substr(0,currTime.length() - 2) + ".log";
-    ofstream log(name.c_str());
-
+    string name = prog + ".log";
+    ofstream log;
+    log.open(name.c_str(), std::ofstream::app);
+    
+    log << currTime.substr(0,currTime.length() - 2) << endl;
     for (int i = 0; i < TESTVECTOR.size(); i+=1)
     {
         log << TESTVECTOR[i] << endl; // flush buffer as long strings
