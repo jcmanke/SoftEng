@@ -10,24 +10,39 @@
 
 using namespace std;
 
-
+//prototypes
 string CompileSourceFile ( string name );
-string diffCall(string cmd);
 void ExecuteTests(string prog);
 void FindTests ();
 void UsageMenu();
 void ParseDirectory(string root);
-void WriteLog(string prog);
+bool WriteLog(string prog);
 
-
+//globals
 int CORRECTTESTS = 0;
 vector<string> TESTVECTOR;
 struct dirent *ITEM;
 
+/**************************************************************************//**
+ * Function: Main
+ * 
+ * Description: Starting point of the program. Checks command line arguments
+ *  and calls other functions to perform main work of the program.
+ * 
+ * Parameters:
+ *  argc - number of command line arguments
+ *  argv - array of command line arguments
+ *
+ * Returns:
+ *  0 - program completed successfully
+ *  1 - incorrect number of command line arguments
+ *  -1 - no tests found
+ *  -2 - error opening log file
+ *****************************************************************************/
 int main( int argc, char * argv[] )
 {
-    ofstream logFout;
     string target, sourceFile;
+    int logSuccess = 0;
     if (argc != 2)
     {
         UsageMenu();
@@ -38,29 +53,36 @@ int main( int argc, char * argv[] )
     
     FindTests();
     
-    target = CompileSourceFile( sourceFile );
-    
-    if ( !logFout )
-    {
-        cout << "Error opening log file." << endl;
-        return -1;
-    }  
+    target = CompileSourceFile( sourceFile ); 
        
     if ( TESTVECTOR.empty() )
     {
         //no tests found, do something
         cout << "No tests found." << endl;
-        return -2;
+        return -1;
     }
     
     ExecuteTests( target );
 
-    WriteLog( sourceFile );
-
+    if(!WriteLog( sourceFile ) )
+    {
+        cout << "Error opening log file." << endl;
+        return -2;        
+    }
     return 0;
 }
 
-//returns shortened name
+/**************************************************************************//**
+ * Function: CompileSourceFile
+ * 
+ * Description: Compiles an executable program from a given source code file.
+ * 
+ * Parameters:
+ *  name - the name of the source code file to compile
+ *
+ * Returns:
+ *  the executable's name (source file stripped of extension)
+ *****************************************************************************/
 string CompileSourceFile ( string name )
 {
     int index = name.find_last_of(".C");
@@ -70,36 +92,27 @@ string CompileSourceFile ( string name )
         index = name.find_last_of(".cpp");
     }
 
-    string baseName = name.substr(0,index);
+    string executable = name.substr(0,index);
     // compile the prog
-    string cmd = "g++ -o " + baseName + " " + name + " -g ";
+    string cmd = "g++ -o " + executable + " " + name + " -g ";
     system(cmd.c_str());
     
-    return baseName;
+    return executable;
 }
 
-string diffCall(string cmd)
-{
-    // don't know how to do this without a ptr to a pipe
-    FILE *diff = popen(cmd.c_str(),"r");
-    char answer[1024]; // bit large, but w/e
-    string returnString;
-    
-    // while not termed end of pipe (end of reply)
-    while(!feof(diff))
-    {
-        // check for nulls
-        if(!fgets(answer, 1024, diff))
-            returnString = returnString + answer; // save the answer
-    }
-    // Debug
-    //cout << cmd << endl << returnString << endl;
-    // close pipe
-    pclose(diff);
-
-    return returnString;
-}
-
+/**************************************************************************//**
+ * Function: ExecuteTests
+ * 
+ * Description: Runs the target program against all test cases stored in the
+ *  TESTVECTOR. Uses the diff command to determine pass or fail on each case.
+ *  Rewrites TESTVECTOR with results and compiles overall statistics.
+ * 
+ * Parameters:
+ *  prog - the name of the target executable program
+ *
+ * Returns:
+ *  none
+ *****************************************************************************/
 void ExecuteTests(string prog)
 {
     stringstream ss;
@@ -117,7 +130,6 @@ void ExecuteTests(string prog)
     
         // compare
         string cmd = "diff " + ansFile + " " + outFile + " > /dev/null";
-        //string diff = diffCall(cmd);
         int diff = system(cmd.c_str());
         // convert to string
         ss << diff;
@@ -127,7 +139,7 @@ void ExecuteTests(string prog)
         {
             int index = TESTVECTOR[i].find_last_of(".tst");
             TESTVECTOR[i] = TESTVECTOR[i].substr(0,index) + ": succeeded perfectly\n";
-            CORRECTTESTS += 1;
+            CORRECTTESTS ++;
         }
         else 
         {
@@ -138,6 +150,18 @@ void ExecuteTests(string prog)
     
 }
 
+/**************************************************************************//**
+ * Function: FindTests
+ * 
+ * Description: Gets the root directory of the program, then makes a call to
+ *  ParseDirectory() to find all test cases with the directory and its children.
+ * 
+ * Parameters:
+ *  none
+ *
+ * Returns:
+ *  none
+ *****************************************************************************/
 void FindTests ()
 {   
 
@@ -149,8 +173,6 @@ void FindTests ()
     // error
     if (!cwd)
     {
-        // This line does not compile. Also, seems useless.
-        // TESTVECTOR = NULL;
         return;
     }
 
@@ -159,6 +181,18 @@ void FindTests ()
     ParseDirectory(root);
 }
 
+/**************************************************************************//**
+ * Function: Main
+ * 
+ * Description: Recursively searches for test case files (notated by extension
+ *  .tst). Test cases are added to the TESTVECTOR.
+ * 
+ * Parameters:
+ *  root - the directory to search in
+ *
+ * Returns:
+ *  none
+ *****************************************************************************/
 void ParseDirectory(string root)
 {  
     string temp;
@@ -181,8 +215,6 @@ void ParseDirectory(string root)
             {
                 int length = temp.length();
                 if ( length > 4 && temp.substr(length-4) == ".tst")
-                    /*temp[length-1] == 't' && temp[length-2] 
-                    == 's' && temp[length-3] == 't' && temp[length-4] == '.' )*/
                 {
                     TESTVECTOR.push_back(root+'/'+temp);
                 }
@@ -197,22 +229,49 @@ void ParseDirectory(string root)
     closedir(dir);
 }
 
-
+/**************************************************************************//**
+ * Function: UsageMenu
+ * 
+ * Description: Prints a usage statement for this program to the screen.
+ * 
+ * Parameters:
+ *  none
+ *
+ * Returns:
+ *  none
+ *****************************************************************************/
 void UsageMenu()
 {
     cout << "Please re-run as './grade <source to test>'" << endl << endl;
 }
 
-void WriteLog(string prog)
+/**************************************************************************//**
+ * Function: Main
+ * 
+ * Description: Writes test results to a file named <prog>.log.
+ * 
+ * Parameters:
+ *  prog - the name of the tested source code file
+ *
+ * Returns:
+ *  true - if log was written successfully
+ *  false - if log file failed to open
+ *****************************************************************************/
+bool WriteLog(string prog)
 {
     // make name / date log.
     time_t now;
     time(&now);
     string currTime = ctime(&now);
+    
+    //open log file
     string name = prog + ".log";
     ofstream log;
-    log.open(name.c_str(), std::ofstream::app);
     
+    log.open(name.c_str(), std::ofstream::app);    
+    if(!log)
+        return false;
+
     log << currTime.substr(0,currTime.length() - 2) << endl;
     for (int i = 0; i < TESTVECTOR.size(); i+=1)
     {
@@ -223,7 +282,10 @@ void WriteLog(string prog)
     log << "            |" << endl;
     log << "Bottom Line V" << endl;
     log << "--------------------------------------------------------------------------------" << endl;
-
     log << "Correct: " << CORRECTTESTS << "\nFailed: " << TESTVECTOR.size() - CORRECTTESTS << endl;
-    log << "Success Rate: " << CORRECTTESTS/ TESTVECTOR.size() * 100 << "%" << endl; 
+    log << "Success Rate: " << (double)CORRECTTESTS / TESTVECTOR.size() * 100 << "%" << endl; 
+    log << "--------------------------------------------------------------------------------" << endl << endl;
+    
+    log.close();
+    return true;
 }
