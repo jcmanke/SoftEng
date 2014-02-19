@@ -11,27 +11,22 @@
 using namespace std;
 
 /*************************************************************************//**
- * @file grade.C
+ * F:ile grade.C
  *
- * @mainpage Program 1 - Automated Grader 
+ * Program 1 - Automated Grader 
  *
- * @section course_section Course Information
- * @author Adam Meaney
+ * Course Information
+ * Authors: Alex Wulf, Adam Meaney, Joe Manke
  * 
- * @date 2-19-2014
+ * Due Date: 2-19-2014
  * 
- * @par Professor: 
- *         Dr. Logar
+ * Professor: Dr. Logar
  * 
- * @par Course: 
- *         Software Engineering 3-415
- * 
- * @par Location: 
- *         McLaury 313
+ * Course: Software Engineering CSC470
  *
- * @section program_section Program Information 
+ * Program Information 
  * 
- * @details The program automatically grades basic programs.
+ * Program Description: The program automatically grades basic programs.
  *
  * When a program is given to our program, we compile it and open a log file
  * to facilitate grading. We then search all following directories for tests
@@ -39,20 +34,13 @@ using namespace std;
  * write the output of the programs and test it against the answer files.
  *
  *
- * @section compile_section Compiling and Usage 
+ * Compiling and Usage 
  *
- * @par Compiling Instructions: 
- *      normal compilation. g++ grade.C -o grade
+ * Compiling Instructions:
+ *  make
  * 
- * @par Usage: 
-   @verbatim  
-   ./grade <source>
-   @endverbatim 
- *
- * @section todo_bugs_modification_section Todo, Bugs, and Modifications
- * 
- * @bug No known bugs
- * 
+ * Usage:  
+ *  ./grade <source>
  *****************************************************************************/
 
 //prototypes
