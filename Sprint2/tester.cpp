@@ -49,6 +49,11 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
 void solvetestcases();
 
 
+
+int MININT = -2147483647;
+
+
+
 /*********************************** main ***********************************/
 //  Primary function of the program
 /****************************************************************************/
@@ -140,11 +145,14 @@ void generatetestcases()
   stringstream temp;
   generatetestcasesmenu(doubles, lesserThanAmount, greaterThanAmount, min, 
                         max, amountToGenerate, filesToMake);
+  double inValue;
+  unsigned short drandSeed = 128;
 
   // if max and min are both max (none selected, use 0,1 as it leaves rand)
 
   // seed random
   srand (time(NULL));
+  seed48(&drandSeed);
 
   // if doubles
   if (doubles)
@@ -184,7 +192,15 @@ void generatetestcases()
       for (int j = 0; j < inserts; j +=1)
       {
         // threshold     offset to min   by random fraction   times the difference
-        double inValue = min + ((double) rand() / RAND_MAX) * (max - min);
+        if (max != 1)
+        {
+          inValue = (min + (rand() % (int)max) + 1) * drand48();
+        }
+        else
+        {
+          inValue = (MININT * rand()) + (rand() + rand()) * drand48();
+        }
+         
         fout << inValue << endl;
       }
 
@@ -215,11 +231,11 @@ void generatetestcases()
       }
       else if (greaterThanAmount)
       {
-        inserts = rand() % amountToGenerate * 5 + amountToGenerate;
+        inserts = rand() % (amountToGenerate * 5 + amountToGenerate);
         // if amount... run again
         if (inserts == amountToGenerate)
         {
-          inserts = rand() % amountToGenerate * 5 + amountToGenerate;
+          inserts = rand() % (amountToGenerate * 5 + amountToGenerate);
         }
       }
       else
@@ -230,8 +246,17 @@ void generatetestcases()
       for (int j = 0; j < inserts; j +=1)
       {
         // threshold  offset to min   by random fraction   times the difference
-        int inValue = (int) (min + ((double) rand() / RAND_MAX) * (max - min));
-        fout << inValue << endl;
+        //int inValue = (int) (min + ((double) rand() / RAND_MAX) * (max - min));
+        if (max != 1 && min != 0)
+        {
+          inValue = (int (min) + rand()) % int(max) + 1;
+        }
+        else
+        {
+          inValue = MININT + rand() + rand(); // Max at randmax, min at LONG_MIN
+        }        
+
+        fout << (int) inValue << endl;
       }
 
       fout.close();
@@ -250,6 +275,10 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
 {
   string input = "";
   bool range;
+
+  // defaults for min and max
+  min = 0;
+  max = 1;
 
   //make welcome menu
   cout << "\nWelcome to the test-case generator!\n" << endl;
@@ -274,7 +303,8 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
     }
     else if (!input.compare("x"))
     {
-      return; // change of heart
+      cout << "Exiting.  Please run again." << endl;
+      exit(0); // change of heart
     }
     else
     {
@@ -294,7 +324,8 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
     }
     else if (!input.compare("x"))
     {
-      return; // change of heart
+      cout << "Exiting.  Please run again." << endl;
+      exit(0); // change of heart
     }
     else
     {
@@ -319,7 +350,8 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
     }
     else if (!input.compare("x"))
     {
-      return; // change of heart
+      cout << "Exiting.  Please run again." << endl;
+      exit(0); // change of heart
     }
     else
     {
@@ -346,8 +378,9 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
       }
       else if (!input.compare("x"))
       {
-        return; // change of heart
-      } 
+        cout << "Exiting.  Please run again." << endl;
+        exit(0); // change of heart
+      }
       else
       {
         cout << "\nPlease re-enter." << endl;
@@ -365,9 +398,10 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
     {
       break;
     }
-    else if (!input.compare("x"))
+    else if (!input.compare("x") || !input.compare("X"))
     {
-      return; // change of heart
+      cout << "Exiting.  Please run again." << endl;
+      exit(0); // change of heart
     }
     else
     {
@@ -386,8 +420,14 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
       range = false;
       break;
     }
+    else if (!input.compare("x") || !input.compare("X"))
+    {
+      cout << "Exiting.  Please run again." << endl;
+      exit(0); // change of heart
+    }
     else if (input.compare("y") == 0 || input.compare("yes") == 0 )
     {
+      range = true;
       break;
     }
   }
@@ -397,18 +437,23 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
   {
     cout << "What minimum value should I work with?"  << endl;
     cin >> input;
-    min = atoi(input.c_str());
+    if (!input.compare("x") || !input.compare("X"))
+    {
+      cout << "Exiting.  Please run again." << endl;
+      exit(0); // change of heart
+    }
+    min = atof(input.c_str());
 
     cout << "What max value should I work with?"  << endl;
     cin >> input;
-    max = atoi(input.c_str());
+    if (!input.compare("x") || !input.compare("X"))
+    {
+      cout << "Exiting.  Please run again." << endl;
+      exit(0); // change of heart
+    }
+    max = atof(input.c_str());
   }
-  else
-  {
-    // set min and max to max
-    min = LONG_MIN;
-    max = LONG_MAX; 
-  }
+  
 }
 
 
