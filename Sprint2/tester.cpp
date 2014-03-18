@@ -45,6 +45,7 @@ int runtests(string progname, string specifictestcase);
 void writefinaloutfile(string progname, vector<string> finaloutfilecontents);
 void find_students(string progdir);
 vector<string> find_tsts(string progdir);
+string Generate_Performance_Report(string file, int score, int total);
 int filesequal(string file1name, string file2name);
 void generatetestcases();
 void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount, 
@@ -115,8 +116,8 @@ int main(int argc, char* argv[])
   /*while more .tst files need ran, continue running the tests against the
   program*/
   int score = 0;
-
-
+  vector<string> performance;
+  string currentProg;
 
 
 
@@ -141,9 +142,15 @@ int main(int argc, char* argv[])
       score = -1;
       break; // stop tests
     }
+    else 
+    {
+      score += result;
+    }
   }
+  // QQQ!!! Alex : get report on this program
+  currentProg = Generate_Performance_Report(progname, score, testcases.size());
 
-  
+
   //writing all of the results to the .out file
   writefinaloutfile(progname, finaloutfilecontents);  
   
@@ -155,6 +162,18 @@ int main(int argc, char* argv[])
 }
 /********************************** END main **********************************/
 
+string Generate_Performance_Report(string file, int score, int total)
+{
+  string report;
+  int lastDir = file.rfind("/");
+  if (score == -1)
+  {
+   
+    report = file.substr(lastDir +1);
+    return report + ":  FAILED";
+  }
+
+}
 
 //QQQ!!! Alex : testcase builder starts here
 void generatetestcases()
