@@ -34,12 +34,16 @@
 #include <algorithm>
 #include <climits>
 #include <cstdlib>
+#include <dirent.h>
+
 
 using namespace std;
 
 //Function Prototypes
-string runtests(string progname, string specifictestcase);
+//string runtests(string progname, string specifictestcase);
+int runtests(string progname, string specifictestcase);
 void writefinaloutfile(string progname, vector<string> finaloutfilecontents);
+void find_students(string progdir);
 vector<string> find_tsts(string progdir);
 int filesequal(string file1name, string file2name);
 void generatetestcases();
@@ -51,7 +55,7 @@ void solvetestcases();
 
 
 int MININT = -2147483647;
-
+vector<string> STUDENTVECTOR;
 
 
 /*********************************** main ***********************************/
@@ -66,7 +70,7 @@ int main(int argc, char* argv[])
   finaloutfilecontents.clear();
 
   //test for proper program usage from command line
-  if(argc < 2) //QQQ!!! Alex: change to != 2
+  if(argc != 2) //QQQ!!! Alex: change to != 2
   {
     cout << "\nUsage:\ntester <source_file>\n Exiting.\n" << endl;
     return -1;
@@ -105,21 +109,40 @@ int main(int argc, char* argv[])
   // being tested
   vector<string> testcases;
   testcases = find_tsts(progdir);
+  // QQQ!!! Alex: keeping with style
+  find_students(progdir);
    
   /*while more .tst files need ran, continue running the tests against the
   program*/
+  int score = 0;
+
+
+
+
+
   for(int i=0;i<testcases.size();i++)
   {
+/* QQQ!!! Alex: deprecating this and reworking runtests to return 0 fail, 1 pass 
+
     //running the test and capturing results
     string results = runtests(progname, testcases.at(i));
     
     //making sure the runtests() function executed successfully 
     if(results != "files did not open for comparison\n")
-    {
+    {)
       //storing the results of the test into finaloutfilecontents
       finaloutfilecontents.push_back(results);
     }
+*/
+    int result = runtests(progname, testcases.at(i));
+    string current = testcases.at(i);
+    if (result == 0 && !current.substr(current.length() - 8).compare("crit.tst") )
+    {
+      score = -1;
+      break; // stop tests
+    }
   }
+
   
   //writing all of the results to the .out file
   writefinaloutfile(progname, finaloutfilecontents);  
@@ -457,6 +480,42 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
 }
 
 
+void find_students(string progdir)
+{
+  string temp;
+  DIR *dir = opendir(progdir.c_str()); // open the current directory
+  struct dirent *entry;
+  if (!dir)
+  {
+    // not a directory
+    return;
+  }
+
+  while (entry = readdir(dir)) // notice the single '='
+  {
+    temp = entry->d_name;
+    if ( temp != "." && temp != ".." )
+    {
+      if ( temp[temp.size() - 1] != '~' )
+      {
+        int length = temp.length();
+        if ( length > 4 && (temp.substr(length-4) == ".cpp") || temp.substr(length-2) == ".C" )
+        {
+          STUDENTVECTOR.push_back(progdir+'/'+temp);
+        }
+        else if (!temp.compare("tests"))
+        {
+          find_students(progdir+'/'+temp);
+        }
+      }
+    }
+  }
+
+  closedir(dir);
+
+}
+
+
 
 /********************************* find_tsts **********************************/
 // Locates all .tst files to be ran against the program to be tested
@@ -466,7 +525,9 @@ vector<string> find_tsts(string progdir)
     vector<string> tstfilelist;
     tstfilelist.clear();    
     
-    string popencommand = "find "+progdir+" -name '*.tst'";
+    string popencommand = "find "+progdir+"/test/ -name '*.tst'"; 
+    // QQQ!!! Alex edited to look in test
+
     FILE * f = popen( popencommand.c_str(), "r" );
    
     const int BUFSIZE = 1000;
@@ -483,7 +544,19 @@ vector<string> find_tsts(string progdir)
       tstfilelist.at(i).replace(tstfilelist.at(i).end()-1,
       tstfilelist.at(i).end(),"");
     }
-    
+  
+    // QQQ!!! Alex: iterate over tstfilelist and put all crit.tst in the 
+    // front of list
+    for(int i=0;i<tstfilelist.size();i++)
+    {
+      string temp = tstfilelist.at(i);
+      if (!temp.substr(temp.length() - 8).compare("crit.tst"))
+      {
+        tstfilelist.erase(tstfilelist.begin() + i);
+        tstfilelist.insert(tstfilelist.begin(), temp);
+      }
+    }
+  
     return tstfilelist;
 }
 /******************************* END find_tsts ********************************/ 
@@ -494,7 +567,8 @@ vector<string> find_tsts(string progdir)
 // Runs all of the .tst test cases against the program one at a time
 //  and returns the results of that particlar test, stored in a string
 /******************************************************************************/
-string runtests(string progname, string specifictestcase)
+//string runtests(string progname, string specifictestcase)
+int runtests(string progname, string specifictestcase)
 { 
   string testresult;
   
@@ -517,18 +591,21 @@ string runtests(string progname, string specifictestcase)
   int nodifference = filesequal(testcaseans, tempfile);
   if(nodifference == 0)
   {
-    testresult = "Result: pass    Case: " + specifictestcase; 
+    // QQQ!!! Alex : changing... testresult = "Result: pass    Case: " + specifictestcase; 
+    return 1;
   }
   else if(nodifference ==1)
   {
-    testresult = "Result: fail    Case: " + specifictestcase;
+    // QQQ!!! Alex : changing... testresult = "Result: fail    Case: " + specifictestcase;
+    return 0;
   }
   else
   {
-    testresult = "files did not open for comparison";
+    // QQQ!!! Alex : changing... testresult = "files did not open for comparison";
+    return -1;
   }
       
-  return testresult;
+  // QQQ!!! Alex : changing... return testresult;
 }
 /******************************* END runtests *********************************/
 
