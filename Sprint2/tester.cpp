@@ -54,7 +54,7 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
                            int &amountToGenerate, int &filesToMake);
 void solvetestcases();
 void cleanup();
-
+void pregenerateclean();
 
 int MININT = -2147483647;
 vector<string> STUDENTVECTOR;
@@ -337,6 +337,27 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
   //make welcome menu
   cout << "\nWelcome to the test-case generator!\n" << endl;
   cout << "\033[1;34mbold Press 'x' and enter at any time to leave.\033[0m\n";
+
+  while(1)
+  {
+    // inquire about cleaning old tests or overwrite?
+    cout << "\nRemove old generated tests (y) or just overwrite as needed (n)?" << endl;
+    string response;
+
+    cin >> response;
+    transform( input.begin(), input.end(), input.begin(), ::tolower);
+    if (!input.compare("y") || !input.compare("yes"))
+    {
+      cout << "\n\tClearing..." << endl;
+      pregenerateclean();
+      break;
+    }
+    else if (!input.compare("n") || !input.compare("no"))
+    {
+      break;
+    }
+    cout << "I didn't understand.  Please try again." << endl;
+  }
 
   // start by asking about type
   while(1)
@@ -815,4 +836,9 @@ void cleanup()
   // now deletes
   STUDENTVECTOR.erase(STUDENTVECTOR.begin(), STUDENTVECTOR.end());
   TESTCASES.erase(TESTCASES.begin(), TESTCASES.end());  
+}
+
+void pregenerateclean()
+{
+  system("rm ./tests/GeneratedTestCase*");
 }
