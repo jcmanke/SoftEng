@@ -31,6 +31,7 @@
 #include <vector>
 #include <sstream>
 // QQQ!!! Alex : added
+#include <unistd.h>
 #include <algorithm>
 #include <climits>
 #include <cstdlib>
@@ -41,9 +42,9 @@ using namespace std;
 
 //Function Prototypes
 //string runtests(string progname, string specifictestcase);
-int runtests(string progname, string specifictestcase);
+int runtests(string prog, string specifictestcase);
 void writefinaloutfile(string progname, vector<string> finaloutfilecontents);
-void find_students(string progdir);
+void find_students(string directory);
 vector<string> find_tsts(string progdir);
 string Generate_Performance_Report(string file, int score, int total);
 int filesequal(string file1name, string file2name);
@@ -71,21 +72,23 @@ int main(int argc, char* argv[])
   finaloutfilecontents.clear();
 
   //test for proper program usage from command line
-  if(argc != 2) //QQQ!!! Alex: change to != 2
+  if(argc != 1) //QQQ!!! Alex: change to != 2
   {
     cout << "\nUsage:\ntester <source_file>\n Exiting.\n" << endl;
     return -1;
   }  
   
   //fill strings with proper names
-  prog_cpp = argv[1];
+
+  // QQQ!!! Alex: moved to runtests to run on each test 
+/*  prog_cpp = argv[1];
   progname = prog_cpp.substr(0,prog_cpp.find("."));
   progcomp = "g++ -o " + progname  + " " + prog_cpp;
   size_t found = prog_cpp.find_last_of("/\\");// QQQ!!! Alex : why not just ints?
   progdir = progname.substr(0,found+1);
-  
+
   //compile program to be tested
-  system(progcomp.c_str());
+  system(progcomp.c_str());*/
 
   //QQQ!!! Alex: inserting here for new functionality
   string ans;
@@ -111,7 +114,10 @@ int main(int argc, char* argv[])
   vector<string> testcases;
   testcases = find_tsts(progdir);
   // QQQ!!! Alex: keeping with style
-  find_students(progdir);
+
+  char *directory;
+  getwd(directory);
+  find_students(directory);
    
   /*while more .tst files need ran, continue running the tests against the
   program*/
@@ -120,9 +126,12 @@ int main(int argc, char* argv[])
   string currentProg;
 
 
-
-  for(int i=0;i<testcases.size();i++)
+  // foreach program
+  for (int h = 0; h < STUDENTVECTOR.size(); h+=1)
   {
+    // and for each test case
+    for(int i=0;i<testcases.size();i++)
+    {
 /* QQQ!!! Alex: deprecating this and reworking runtests to return 0 fail, 1 pass 
 
     //running the test and capturing results
@@ -135,21 +144,22 @@ int main(int argc, char* argv[])
       finaloutfilecontents.push_back(results);
     }
 */
-    int result = runtests(progname, testcases.at(i));
-    string current = testcases.at(i);
-    if (result == 0 && !current.substr(current.length() - 8).compare("crit.tst") )
-    {
-      score = -1;
-      break; // stop tests
+      int result = runtests(progname, testcases.at(i));
+      string current = testcases.at(i);
+      if (result == 0 && !current.substr(current.length() - 8).compare("crit.tst") )
+      {
+        score = -1;
+        break; // stop tests
+      }
+      else 
+      {
+        score += result;
+      }
     }
-    else 
-    {
-      score += result;
-    }
-  }
   // QQQ!!! Alex : get report on this program
-  currentProg = Generate_Performance_Report(progname, score, testcases.size());
+    currentProg = Generate_Performance_Report(progname, score, testcases.size());
 
+  }
 
   //writing all of the results to the .out file
   writefinaloutfile(progname, finaloutfilecontents);  
@@ -164,15 +174,17 @@ int main(int argc, char* argv[])
 
 string Generate_Performance_Report(string file, int score, int total)
 {
-  string report;
   int lastDir = file.rfind("/");
+  string report = file.substr(lastDir + 1);
   if (score == -1)
   {
-   
-    report = file.substr(lastDir +1);
     return report + ":  FAILED";
   }
-
+  
+  stringstream temp("");
+  double percent = score / total;
+  temp << percent;
+  return report + ":  " + temp.str() + "%";
 }
 
 //QQQ!!! Alex : testcase builder starts here
@@ -499,10 +511,10 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
 }
 
 
-void find_students(string progdir)
+void find_students(string directory)
 {
-  string temp;
-  DIR *dir = opendir(progdir.c_str()); // open the current directory
+  string temp(directory);
+  DIR *dir = opendir(temp.c_str()); // open the current directory
   struct dirent *entry;
   if (!dir)
   {
@@ -520,11 +532,11 @@ void find_students(string progdir)
         int length = temp.length();
         if ( length > 4 && (temp.substr(length-4) == ".cpp") || temp.substr(length-2) == ".C" )
         {
-          STUDENTVECTOR.push_back(progdir+'/'+temp);
+          STUDENTVECTOR.push_back(directory + '/' + temp);
         }
         else if (!temp.compare("tests"))
         {
-          find_students(progdir+'/'+temp);
+          find_students(directory + '/' + temp);
         }
       }
     }
@@ -543,8 +555,33 @@ vector<string> find_tsts(string progdir)
 {
     vector<string> tstfilelist;
     tstfilelist.clear();    
+    int space;
     
-    string popencommand = "find "+progdir+"/test/ -name '*.tst'"; 
+    // QQQ!!! Alex: Modified for new build as compile happens at run time
+    char *location;
+    getwd(location);
+    string dir (location);
+
+    string popencommand = "find "+dir+"/test/ -name '*.tst'"; 
+
+    // because this sometimes happens... escape spaces in name
+    int pathStart = popencommand.find("/");
+    string pcmd = popencommand.substr(0, pathStart);
+    popencommand = popencommand.substr(pathStart);
+
+    space = popencommand.find(" ");
+    while (space != -1)
+    {
+      popencommand.replace(space, 1, "\\ ");
+      pcmd += popencommand.substr(0, space + 2);
+      popencommand = popencommand.substr(space + 2);
+      space = popencommand.find(" ");
+    }
+    // restore for rest of code
+    string final = pcmd + popencommand;
+    popencommand = final;
+
+
     // QQQ!!! Alex edited to look in test
 
     FILE * f = popen( popencommand.c_str(), "r" );
@@ -587,10 +624,19 @@ vector<string> find_tsts(string progdir)
 //  and returns the results of that particlar test, stored in a string
 /******************************************************************************/
 //string runtests(string progname, string specifictestcase)
-int runtests(string progname, string specifictestcase)
+int runtests(string prog, string specifictestcase)
 { 
   string testresult;
   
+  // compile each
+  string prog_cpp = prog;
+  string progname = prog_cpp.substr(0,prog_cpp.find("."));
+  string progcomp = "g++ -o " + progname  + " " + prog_cpp;
+  size_t found = prog_cpp.find_last_of("/\\");
+
+  //compile program to be tested
+  system(progcomp.c_str());
+
   //temporary file used to compare results
   string tempfile = "temp.txt";
   
