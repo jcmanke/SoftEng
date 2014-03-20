@@ -53,7 +53,7 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
                            bool &greaterThanAmount, double &min, double &max, 
                            int &amountToGenerate, int &filesToMake);
 void solvetestcases();
-
+void cleanup();
 
 
 int MININT = -2147483647;
@@ -613,7 +613,8 @@ void find_tsts(string progdir)
         TESTCASES.insert(TESTCASES.begin(), temp);
       }
     }
-  
+  /// QQQ!!! Alex: cleanup
+  cleanup();
 }
 /******************************* END find_tsts ********************************/ 
 
@@ -798,3 +799,20 @@ void writefinaloutfile(string progname, vector<string> finaloutfilecontents)
   fout.close();
 }
 /*************************** END writefinaloutfile ****************************/
+
+void cleanup()
+{
+  // for each student in vector, delete the associated temp.txt file
+  for (int i = 0; i < STUDENTVECTOR.size() ; i +=1)
+  {
+    // get path
+    string cmd = STUDENTVECTOR.at(i).substr(0, STUDENTVECTOR.at(i).rfind("/"));
+    // append remove and target
+    cmd = "rm " + cmd +  "temp.txt";
+    // send to system for delete
+    system(cmd.c_str());
+  }
+  // now deletes
+  STUDENTVECTOR.erase(STUDENTVECTOR.begin(), STUDENTVECTOR.end());
+  TESTCASES.erase(TESTCASES.begin(), TESTCASES.end());  
+}
