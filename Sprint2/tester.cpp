@@ -219,7 +219,7 @@ void generatetestcases()
       // make string of file name
       temp.str("");
       temp << i;
-      file = "GeneratedTestCase" + temp.str() + ".tst";
+      file = "./tests/GeneratedTestCase" + temp.str() + ".tst";
       fout.open(file.c_str());
 
       // populate 
@@ -344,9 +344,7 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
   {
     // inquire about cleaning old tests or overwrite?
     cout << "\nRemove old generated tests (y) or just overwrite as needed (n)?" << endl;
-    string response;
-
-    cin >> response;
+    cin >> input;
     transform( input.begin(), input.end(), input.begin(), ::tolower);
     if (!input.compare("y") || !input.compare("yes"))
     {
