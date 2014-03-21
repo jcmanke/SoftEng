@@ -45,7 +45,7 @@ using namespace std;
 int runtests(string prog, string specifictestcase);
 void writefinaloutfile(string progname, vector<string> finaloutfilecontents);
 void find_students(string directory);
-void find_tsts(string progdir);
+vector<string> find_tsts(string progdir);
 string Generate_Performance_Report(string file, int score, int total);
 int filesequal(string file1name, string file2name);
 void generatetestcases();
@@ -111,13 +111,15 @@ int main(int argc, char* argv[])
 
   //gathers all of the .tst files in current and sub directories of the program
   // being tested
-  vector<string> testcases;
-  find_tsts(progdir);
+//  vector<string> testcases;
+  TESTCASES = find_tsts(progdir);
   // QQQ!!! Alex: keeping with style
 
-  char *directory;
-  getwd(directory);
-  find_students(directory);
+  char dir[1024];
+  getcwd(dir, sizeof(dir));
+  string loc (dir);
+  // QQQ!!! Alex: get the testcases
+  find_students(loc);
    
   /*while more .tst files need ran, continue running the tests against the
   program*/
@@ -144,7 +146,7 @@ int main(int argc, char* argv[])
       finaloutfilecontents.push_back(results);
     }
 */
-      int result = runtests(progname, testcases.at(i));
+      int result = runtests(STUDENTVECTOR[h], TESTCASES.at(i));
       string current = TESTCASES.at(i);
       if (result == 0 && !current.substr(current.length() - 8).compare("crit.tst") )
       {
@@ -555,7 +557,7 @@ void find_students(string directory)
         {
           STUDENTVECTOR.push_back(directory + '/' + temp);
         }
-        else if (!temp.compare("tests"))
+        else 
         {
           find_students(directory + '/' + temp);
         }
@@ -572,71 +574,44 @@ void find_students(string directory)
 /********************************* find_tsts **********************************/
 // Locates all .tst files to be ran against the program to be tested
 /******************************************************************************/ 
-void find_tsts(string progdir)
+vector<string> find_tsts(string progdir)
 {
-//    vector<string> tstfilelist;
-//    tstfilelist.clear();    
-    int space;
+    vector<string> tstfilelist;
+    tstfilelist.clear();    
     
-    // QQQ!!! Alex: Modified for new build as compile happens at run time
-    char *location;
-    getwd(location);
-    string dir (location);
-
-    string popencommand = "find "+dir+"/tests/ -name '*.tst'"; 
-/*
-    // because this sometimes happens... escape spaces in name
-    int pathStart = popencommand.find("/");
-    string pcmd = popencommand.substr(0, pathStart);
-    popencommand = popencommand.substr(pathStart);
-
-    space = popencommand.find(" ");
-    while (space != -1)
-    {
-      popencommand.replace(space, 1, "\\ ");
-      pcmd += popencommand.substr(0, space + 2);
-      popencommand = popencommand.substr(space + 2);
-      space = popencommand.find(" ");
-    }
-    // restore for rest of code
-    string final = pcmd + popencommand;
-    popencommand = final;
-
-
-    // QQQ!!! Alex edited to look in test
-*/
+    string popencommand = "find "+progdir+" -name '*.tst'";
     FILE * f = popen( popencommand.c_str(), "r" );
    
     const int BUFSIZE = 1000;
     char buf[ BUFSIZE ];
     int i = 0;
     while( fgets( buf, BUFSIZE,  f ) ) {
-//        tstfilelist.push_back(buf);
-      TESTCASES.push_back(buf);
+        tstfilelist.push_back(buf);
     }
     pclose( f );
     
     //removing that frustrating invisible character at the end of the strings
-    for(int i=0;i<TESTCASES.size();i++)// QQQ!!! Alex: clearer way to do this?
+    for(int i=0;i<tstfilelist.size();i++)
     {
-      TESTCASES.at(i).replace(TESTCASES.at(i).end()-1,
-      TESTCASES.at(i).end(),"");
+      tstfilelist.at(i).replace(tstfilelist.at(i).end()-1,
+      tstfilelist.at(i).end(),"");
     }
-  
+
     // QQQ!!! Alex: iterate over tstfilelist and put all crit.tst in the 
     // front of list
-    for(int i=0;i<TESTCASES.size();i++)
+    for(int i=0;i<tstfilelist.size();i++)
     {
-      string temp = TESTCASES.at(i);
+      string temp = tstfilelist.at(i);
       if (!temp.substr(temp.length() - 8).compare("crit.tst"))
       {
-        TESTCASES.erase(TESTCASES.begin() + i);
-        TESTCASES.insert(TESTCASES.begin(), temp);
+        tstfilelist.erase(tstfilelist.begin() + i);
+        tstfilelist.insert(tstfilelist.begin(), temp);
       }
     }
-  /// QQQ!!! Alex: cleanup
-  cleanup();
+    
+    return tstfilelist;
 }
+
 /******************************* END find_tsts ********************************/ 
 
 
@@ -665,7 +640,7 @@ int runtests(string prog, string specifictestcase)
   /*building the string to run the program, adds the appropriate .tst file for
    input to the program and the temp#.txt file as the output of the program 
    being tested*/
-  string progrun = "./"+progname+" < "+specifictestcase+" > "+tempfile;
+  string progrun = progname+" < "+specifictestcase+" > "+tempfile;
   
   //running the program
   system(progrun.c_str());
@@ -715,8 +690,7 @@ int filesequal(string file1name, string file2name)  // QQQ!!! Alex: used as bool
     file2.close();
     return 2;
   }
-  if (!file2)
-  {
+  if (!file2){
     file1.close();
     cout << "Couldn't open the file " << file2name << endl;
     return 2;
