@@ -43,7 +43,8 @@ using namespace std;
 //Function Prototypes
 //string runtests(string progname, string specifictestcase);
 int runtests(string prog, string specifictestcase);
-void writefinaloutfile(string progname, vector<string> finaloutfilecontents);
+void writefinaloutfile(vector<string> finaloutfilecontents);//QQQ!!! Alex : commented out new processing method
+//string progname, vector<string> finaloutfilecontents);
 void find_students(string directory);
 vector<string> find_tsts(string progdir);
 string Generate_Performance_Report(string file, int score, int total);
@@ -160,11 +161,11 @@ int main(int argc, char* argv[])
     }
   // QQQ!!! Alex : get report on this program
     currentProg = Generate_Performance_Report(progname, score, TESTCASES.size());
-
+    finaloutfilecontents.push_back(currentProg);
   }
 
   //writing all of the results to the .out file
-  writefinaloutfile(progname, finaloutfilecontents);  
+  writefinaloutfile(finaloutfilecontents);//QQQ!!! Alex : progname, finaloutfilecontents);  
   
   //deleting the temp file
   remove("temp.txt");
@@ -749,7 +750,8 @@ int filesequal(string file1name, string file2name)  // QQQ!!! Alex: used as bool
 /***************************** writefinaloutfile ******************************/
 // Writes all of the data to the final .log file
 /******************************************************************************/   
-void writefinaloutfile(string progname, vector<string> finaloutfilecontents)
+void writefinaloutfile(vector<string> finaloutfilecontents)//QQQ!!! Alex : commented out new processing method
+//                               string progname, vector<string> finaloutfilecontents)
 {
   //counter to calculate summary of tests
   int totalpassed = 0;
@@ -761,13 +763,17 @@ void writefinaloutfile(string progname, vector<string> finaloutfilecontents)
   time (&rawtime);
   timeinfo = localtime (&rawtime);
   strftime (buffer,16,"%m_%d_%H:%M:%S",timeinfo);
-  
   //string to hold the final output file name
-  string outfilename = progname+"_"+buffer+".log";
+  string outfilename (buffer); //QQQ!!! Alex : just log and time //+ logprogname+"_"+buffer+".log";
   
+  outfilename = "log " + outfilename;
+
   //opening final output file
   ofstream fout;
   fout.open(outfilename.c_str());
+
+  fout << "\nTest Summary:\n\n";
+
   
   //writing the contents to the output file
   for(int i=0;i<finaloutfilecontents.size();i++)
@@ -780,8 +786,7 @@ void writefinaloutfile(string progname, vector<string> finaloutfilecontents)
   }
   
   //printing out the final summary of the tests to the output file
-  fout << 
-  "\nTest Summary  \n" 
+  fout <<  
     "     Total # of tests ran:    " << finaloutfilecontents.size() << 
   "\n     Total # of tests passed: " << totalpassed <<
   "\n              Percent passed: " << 
