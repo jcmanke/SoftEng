@@ -175,7 +175,7 @@ int main(int argc, char* argv[])
       {
         score += result;
       }
-      writeindividualreport(STUDENTVECTOR[h], TESTCASES.at(i), score);
+      writeindividualreport(STUDENTVECTOR[h], TESTCASES.at(i), result);
     }
   // QQQ!!! Alex : get report on this program
     currentProg = Generate_Performance_Report(progname, score, TESTCASES.size());
@@ -576,7 +576,14 @@ void find_students(string directory, int level)
              || temp.substr(length-2) == ".C")
              && level > 0 )
         {
-          STUDENTVECTOR.push_back(directory + '/' + temp);
+          // because I'm getting duplicates
+          string insert = directory + '/' + temp;
+          if (find(STUDENTVECTOR.begin(), 
+              STUDENTVECTOR.end(), 
+              insert) == STUDENTVECTOR.end()) // if not found
+          {
+            STUDENTVECTOR.push_back(insert);
+          }
         }
         else if ( (length > 4 && (temp.substr(length-4) == ".cpp")
              || temp.substr(length-2) == ".C")
@@ -854,8 +861,8 @@ void pregenerateclean()
 void writeindividualreport(string program, string testcase, int success)
 {
   string file = program + ".log";
-  ofstream fout(file.c_str(), fstream ::ate); // append
-  if (success) // if passed
+  ofstream fout(file.c_str(), fstream ::app); // append
+  if (success > 0) // if passed
   {
     fout << "passed: " << testcase << endl;
   }
