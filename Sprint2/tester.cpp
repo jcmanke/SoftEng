@@ -45,7 +45,7 @@ using namespace std;
 int runtests(string prog, string specifictestcase);
 void writefinaloutfile(vector<string> finaloutfilecontents);//QQQ!!! Alex : commented out new processing method
 //string progname, vector<string> finaloutfilecontents);
-void find_students(string directory);
+void find_students(string directory, int level);
 vector<string> find_tsts(string progdir);
 string Generate_Performance_Report(string file, int score, int total);
 int filesequal(string file1name, string file2name);
@@ -56,11 +56,14 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
 void solvetestcases();
 void cleanup();
 void pregenerateclean();
+void writeindividualreport(string program, string testcase, int success);
+void generateanswers();
+
 
 int MININT = -2147483647;
 vector<string> STUDENTVECTOR;
 vector<string> TESTCASES;
-
+string GOLDCPP;
 /*********************************** main ***********************************/
 //  Primary function of the program
 /****************************************************************************/
@@ -78,6 +81,9 @@ int main(int argc, char* argv[])
     cout << "\nUsage:\ntester <source_file>\n Exiting.\n" << endl;
     return -1;
   }  
+
+  // QQQ!!! Alex : make gold cpp = ""
+  GOLDCPP.clear();
   
   //fill strings with proper names
 
@@ -91,6 +97,13 @@ int main(int argc, char* argv[])
   //compile program to be tested
   system(progcomp.c_str());*/
 
+  char dir[1024];
+  getcwd(dir, sizeof(dir));
+  string loc (dir);
+
+  TESTCASES = find_tsts(progdir);
+
+  find_students(loc, 0);
   //QQQ!!! Alex: inserting here for new functionality
   string ans;
   do
@@ -100,8 +113,15 @@ int main(int argc, char* argv[])
     transform( ans.begin(), ans.end(), ans.begin(), ::tolower);
     if (ans.compare("y") == 0 || ans.compare("yes") == 0 )
     {
+      // make tests
       generatetestcases();
       cout << "\nTest generation completed\n\n";
+      // find all tests and use generated tests to make ans
+      TESTCASES = find_tsts(progdir);
+      find_students(loc, 0);
+      generateanswers();
+      // clean  
+      cleanup();
       return 0;
     }
     else if (ans.compare("n") == 0 || ans.compare("no") == 0 )
@@ -116,11 +136,8 @@ int main(int argc, char* argv[])
   TESTCASES = find_tsts(progdir);
   // QQQ!!! Alex: keeping with style
 
-  char dir[1024];
-  getcwd(dir, sizeof(dir));
-  string loc (dir);
   // QQQ!!! Alex: get the testcases
-  find_students(loc);
+  find_students(loc, 0);
    
   /*while more .tst files need ran, continue running the tests against the
   program*/
@@ -158,6 +175,7 @@ int main(int argc, char* argv[])
       {
         score += result;
       }
+      writeindividualreport(STUDENTVECTOR[h], TESTCASES.at(i), score);
     }
   // QQQ!!! Alex : get report on this program
     currentProg = Generate_Performance_Report(progname, score, TESTCASES.size());
@@ -167,8 +185,10 @@ int main(int argc, char* argv[])
   //writing all of the results to the .out file
   writefinaloutfile(finaloutfilecontents);//QQQ!!! Alex : progname, finaloutfilecontents);  
   
+  // check all directories
+  cleanup();
   //deleting the temp file
-  remove("temp.txt");
+//  remove("temp.txt");
   
   //exit program
   return 0;
@@ -533,7 +553,7 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
 }
 
 
-void find_students(string directory)
+void find_students(string directory, int level)
 {
   string temp(directory);
   DIR *dir = opendir(temp.c_str()); // open the current directory
@@ -552,13 +572,24 @@ void find_students(string directory)
       if ( temp[temp.size() - 1] != '~' )
       {
         int length = temp.length();
-        if ( length > 4 && (temp.substr(length-4) == ".cpp") || temp.substr(length-2) == ".C" )
+        if ( (length > 4 && (temp.substr(length-4) == ".cpp") 
+             || temp.substr(length-2) == ".C")
+             && level > 0 )
         {
           STUDENTVECTOR.push_back(directory + '/' + temp);
         }
+        else if ( (length > 4 && (temp.substr(length-4) == ".cpp")
+             || temp.substr(length-2) == ".C")
+             && level == 0 )
+        {
+          if (GOLDCPP.empty())
+          {
+            GOLDCPP = directory + '/' + temp;
+          }
+        }
         else 
         {
-          find_students(directory + '/' + temp);
+          find_students(directory + '/' + temp, level + 1);
         }
       }
     }
@@ -818,4 +849,45 @@ void cleanup()
 void pregenerateclean()
 {
   system("rm ./tests/GeneratedTestCase*");
+}
+
+void writeindividualreport(string program, string testcase, int success)
+{
+  string file = program + ".log";
+  ofstream fout(file.c_str(), fstream ::ate); // append
+  if (success) // if passed
+  {
+    fout << "passed: " << testcase << endl;
+  }
+  else
+  {
+    fout << "failed: " << testcase << endl;
+  }
+  fout.close();
+}
+
+void generateanswers()
+{
+  // compile golden cpp
+  string cmd = "g++ -o " 
+               + GOLDCPP.substr(0,GOLDCPP.rfind(".cpp")) 
+               + " " 
+               + GOLDCPP;
+  system(cmd.c_str());
+  string programName = GOLDCPP.substr(GOLDCPP.rfind("/") + 1);
+  programName = programName.substr(0,programName.find(".cpp"));
+
+  // look at all test cases
+  for (int i = 0 ; i < TESTCASES.size() ; i +=1)
+  {
+    // if it's a generated test case
+    if (TESTCASES[i].find("GeneratedTestCase") != -1)
+    {
+      cmd = "./" + programName 
+            + " < " + TESTCASES[i].substr(2) + " > " 
+            + " " + TESTCASES[i].substr(2,TESTCASES[i].rfind(".tst") -2)
+            + ".ans";
+      system(cmd.c_str());
+    }
+  }
 }
