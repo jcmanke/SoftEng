@@ -297,11 +297,11 @@ void generatetestcases()
       }
       else if (greaterThanAmount)
       {
-        inserts = rand() % amountToGenerate * 5 + amountToGenerate;
+        inserts = rand() % (amountToGenerate * 5) + amountToGenerate;
         // if amount... run again
         if (inserts == amountToGenerate)
         {
-          inserts = rand() % amountToGenerate * 5 + amountToGenerate;
+          inserts = rand() % (amountToGenerate * 5) + amountToGenerate;
         }
       }
       else
@@ -319,7 +319,7 @@ void generatetestcases()
         {
           inValue = (MININT * rand()) + (rand() + rand()) * drand48();
         }
-         
+        fout << fixed;
         fout << inValue << endl;
       }
 
@@ -335,7 +335,7 @@ void generatetestcases()
       // make string of file name
       temp.str("");
       temp << i;
-      file = "GeneratedTestCase" + temp.str() + ".tst";
+      file = "./tests/GeneratedTestCase" + temp.str() + ".tst";
       fout.open(file.c_str());
       
       // populate 
@@ -374,7 +374,6 @@ void generatetestcases()
         {
           inValue = MININT + rand() + rand(); // Max at randmax, min at LONG_MIN
         }        
-
         fout << (int) inValue << endl;
       }
 
@@ -475,7 +474,7 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
   // specific amount to work with?
   while(1)
   {
-    cout << "Would you like a specific amount of items to test?"  << endl;
+    cout << "Would you like a specific amount of items to test? (y/n)"  << endl;
     cin >> input;
     transform( input.begin(), input.end(), input.begin(), ::tolower);
     if (!input.compare("y") || !input.compare("yes"))
@@ -486,6 +485,7 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
     else if (!input.compare("n") || !input.compare("no"))
     {
       lesserThanAmount = greaterThanAmount = true;
+      break;
     }
     else if (!input.compare("x"))
     {
@@ -514,6 +514,7 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
       else if (!input.compare(">") || !input.compare("more"))
       {
         lesserThanAmount = false;
+        break;
       }
       else if (!input.compare("x"))
       {
