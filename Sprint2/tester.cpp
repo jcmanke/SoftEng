@@ -19,6 +19,34 @@
         o Take all input via the command line (cin)
 *******************************************************************************/  
 
+/*******************************************************************************
+  Tester.cpp (Version 2.0.0)
+    CSC 470 Tester Program
+    Date: March 23 2014
+    Authors: Joseph Manke, Adam Meaney and Alex Wulff
+    
+    Usage:
+      -This program expects to find all program source files to test in 
+       subdirectories of exectution.  This program also expects a golden or 
+       truth program's source to be located at the level of execution and all 
+       pre-built test files at the execution level or below.
+      -The program offers a text menu for test case generation and immediately
+       prompts the user at the start of the program.  The generator will 
+       terminate execution of the program and will require running again to
+       use the new test cases.
+      -Results of the tests will be listed in a .log file in the same directory
+       as all test programs when ran as well as the level of execution for a 
+       quick view of performance.  Any tests that fail a critical test as noted
+       by "*_crit.tst" will be awarded no points on earlier success and will 
+       fail.
+        
+    Updates:
+       All contributors of Lounge Against The Machine have noted their 
+       contributions and comments on the original by noting the start of their
+       changes with a //QQQ!!! <editor> : <comments> format.
+*******************************************************************************/
+
+
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
@@ -41,10 +69,10 @@
 using namespace std;
 
 //Function Prototypes
-//string runtests(string progname, string specifictestcase);
+//QQQ!!! Alex : dropped for new prototype : string runtests(string progname, string specifictestcase);
 int runtests(string prog, string specifictestcase);
 void writefinaloutfile(vector<string> finaloutfilecontents);//QQQ!!! Alex : commented out new processing method
-//string progname, vector<string> finaloutfilecontents);
+//QQQ!!! Alex : made global : string progname, vector<string> finaloutfilecontents);
 void find_students(string directory, int level);
 vector<string> find_tsts(string progdir);
 string Generate_Performance_Report(string file, int score, int total);
@@ -59,11 +87,16 @@ void pregenerateclean();
 void writeindividualreport(string program, string testcase, int success);
 void generateanswers();
 
-
+/********************************Defines*************************************/
 int MININT = -2147483647;
+/****************************************************************************/
+
+/*********************************GLOBALS************************************/
 vector<string> STUDENTVECTOR;
 vector<string> TESTCASES;
 string GOLDCPP;
+/****************************************************************************/
+
 /*********************************** main ***********************************/
 //  Primary function of the program
 /****************************************************************************/
@@ -130,23 +163,22 @@ int main(int argc, char* argv[])
     }
   }while (1);
 
-  //gathers all of the .tst files in current and sub directories of the program
+  // QQQ!!! Alex : gathers all of the .tst files in current and sub directories of the program
   // being tested
-//  vector<string> testcases;
+  // vector<string> testcases;
   TESTCASES = find_tsts(progdir);
-  // QQQ!!! Alex: keeping with style
 
   // QQQ!!! Alex: get the testcases
   find_students(loc, 0);
    
-  /*while more .tst files need ran, continue running the tests against the
-  program*/
+  // QQQ!!! Alex : while more .tst files need ran, continue running the tests against the
+  //program
   int score = 0;
   vector<string> performance;
   string currentProg;
 
 
-  // foreach program
+  // QQQ!!! Alex : foreach program (edited to end of main)
   for (int h = 0; h < STUDENTVECTOR.size(); h+=1)
   {
     score = 0;
@@ -178,7 +210,7 @@ int main(int argc, char* argv[])
       }
       writeindividualreport(STUDENTVECTOR[h], TESTCASES.at(i), result);
     }
-  // QQQ!!! Alex : get report on this program
+    // QQQ!!! Alex : get report on this program
     currentProg = Generate_Performance_Report(STUDENTVECTOR[h], score, TESTCASES.size());
     finaloutfilecontents.push_back(currentProg);
   }
@@ -186,16 +218,19 @@ int main(int argc, char* argv[])
   //writing all of the results to the .out file
   writefinaloutfile(finaloutfilecontents);//QQQ!!! Alex : progname, finaloutfilecontents);  
   
-  // check all directories
+  // clean up globals
   cleanup();
   //deleting the temp file
-//  remove("temp.txt");
+  //remove("temp.txt");
   
   //exit program
   return 0;
 }
 /********************************** END main **********************************/
 
+/************************Generate_Performance_Report***************************/
+// QQQ!!! Alex: built to write in the specifics of success and failures per cpp
+/******************************************************************************/
 string Generate_Performance_Report(string file, int score, int total)
 {
   int lastDir = file.rfind("/");
@@ -211,7 +246,9 @@ string Generate_Performance_Report(string file, int score, int total)
   return report + ":  " + temp.str() + "%";
 }
 
+/******************************generatetestcases*****************************/
 //QQQ!!! Alex : testcase builder starts here
+/****************************************************************************/
 void generatetestcases()
 {
   bool doubles, lesserThanAmount, greaterThanAmount;
@@ -345,8 +382,9 @@ void generatetestcases()
 }
 
 
-
+/****************************generatetestcasemenu****************************/
 //QQQ!!! Alex : testcase builder menu is here... long...
+/****************************************************************************/
 void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount, 
                            bool &greaterThanAmount, double &min, double &max, 
                            int &amountToGenerate, int &filesToMake)
@@ -553,7 +591,10 @@ void generatetestcasesmenu(bool &doubles, bool &lesserThanAmount,
   
 }
 
-
+/******************************find_students********************************/
+// QQQ!!! Alex : built to directory crawl and find all student files and 
+// avoid duplicates and the golden cpp (praesumo presumo)
+/****************************************************************************/
 void find_students(string directory, int level)
 {
   string temp(directory);
@@ -657,6 +698,9 @@ vector<string> find_tsts(string progdir)
 /********************************** runtests **********************************/
 // Runs all of the .tst test cases against the program one at a time
 //  and returns the results of that particlar test, stored in a string
+
+// QQQ!!! Alex : modified here to compile and execute each test with each 
+// specified test case as part of the "foreach" loop in main.
 /******************************************************************************/
 //string runtests(string progname, string specifictestcase)
 int runtests(string prog, string specifictestcase)
@@ -713,6 +757,8 @@ int runtests(string prog, string specifictestcase)
 
 /********************************* filesequal *********************************/
 // compares two files and returns 1 if not equal, 0 if equal
+
+// QQQ!!! Alex : this was causing huge performance hits. Reworked to a dif check
 /******************************************************************************/ 
 int filesequal(string file1name, string file2name)  // QQQ!!! Alex: used as boolean,
 // so change return type or make clear that return is 0 for false (based on name)
@@ -837,16 +883,27 @@ void writefinaloutfile(vector<string> finaloutfilecontents)//QQQ!!! Alex : comme
 }
 /*************************** END writefinaloutfile ****************************/
 
+/***********************************cleanup**********************************/
+// QQQ!!! Alex : cleans up the globals
+/****************************************************************************/
 void cleanup()
 {
   STUDENTVECTOR.erase(STUDENTVECTOR.begin(), STUDENTVECTOR.end());
   TESTCASES.erase(TESTCASES.begin(), TESTCASES.end());  
 }
 
+/****************************pregenerateclean********************************/
+// QQQ!!! Alex : removes old generated test cases
+/****************************************************************************/
 void pregenerateclean()
 {
   system("rm ./tests/GeneratedTestCase*");
 }
+
+/******************************writeindividualreport*************************/
+// QQQ!!! Alex : writes the specifics of each program's performance with a 
+// given test
+/****************************************************************************/
 
 void writeindividualreport(string program, string testcase, int success)
 {
@@ -862,6 +919,10 @@ void writeindividualreport(string program, string testcase, int success)
   }
   fout.close();
 }
+
+/*******************************generateanswers******************************/
+// QQQ!!! Alex : needed to generate answers to new tests using the golden cpp.
+/****************************************************************************/
 
 void generateanswers()
 {
