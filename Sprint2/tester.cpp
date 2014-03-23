@@ -149,6 +149,7 @@ int main(int argc, char* argv[])
   // foreach program
   for (int h = 0; h < STUDENTVECTOR.size(); h+=1)
   {
+    score = 0;
     // and for each test case
     for(int i=0;i<TESTCASES.size();i++)
     {
@@ -173,12 +174,12 @@ int main(int argc, char* argv[])
       }
       else 
       {
-        score += result;
+        score += 1;
       }
       writeindividualreport(STUDENTVECTOR[h], TESTCASES.at(i), result);
     }
   // QQQ!!! Alex : get report on this program
-    currentProg = Generate_Performance_Report(progname, score, TESTCASES.size());
+    currentProg = Generate_Performance_Report(STUDENTVECTOR[h], score, TESTCASES.size());
     finaloutfilecontents.push_back(currentProg);
   }
 
@@ -205,7 +206,7 @@ string Generate_Performance_Report(string file, int score, int total)
   }
   
   stringstream temp("");
-  double percent = score / total;
+  double percent = (double) score / total;
   temp << percent;
   return report + ":  " + temp.str() + "%";
 }
@@ -838,17 +839,6 @@ void writefinaloutfile(vector<string> finaloutfilecontents)//QQQ!!! Alex : comme
 
 void cleanup()
 {
-  // for each student in vector, delete the associated temp.txt file
-  for (int i = 0; i < STUDENTVECTOR.size() ; i +=1)
-  {
-    // get path
-    string cmd = STUDENTVECTOR.at(i).substr(0, STUDENTVECTOR.at(i).rfind("/"));
-    // append remove and target
-    cmd = "rm " + cmd +  "temp.txt";
-    // send to system for delete
-    system(cmd.c_str());
-  }
-  // now deletes
   STUDENTVECTOR.erase(STUDENTVECTOR.begin(), STUDENTVECTOR.end());
   TESTCASES.erase(TESTCASES.begin(), TESTCASES.end());  
 }

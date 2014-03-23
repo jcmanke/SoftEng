@@ -1,0 +1,15 @@
+
+Test Summary:
+
+bad_student_1.cpp:  1%
+student_3.cpp:  1%
+bad_student_1.cpp:  1%
+student_4.cpp:  1%
+bad_student_2.cpp:  1%
+student_3.cpp:  1%
+bad_student_2.cpp:  1%
+student_4.cpp:  1%
+average.cpp:  1%
+     Total # of tests ran:    9
+     Total # of tests passed: 0
+              Percent passed: 0%
