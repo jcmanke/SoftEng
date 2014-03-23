@@ -205,6 +205,8 @@ int main(int argc, char* argv[])
                                 .find("crit.tst") != -1 )
       {
         score = -1;
+        // output the failure
+        writeindividualreport(STUDENTVECTOR[h], TESTCASES.at(i), result);
         break; // stop tests
       }
       if (result == 1)
