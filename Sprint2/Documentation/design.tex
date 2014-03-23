@@ -1,0 +1,228 @@
+% !TEX root = SystemTemplate.tex
+\chapter{Design  and Implementation}
+This section is used to describe the design details for each of the major components in the system.
+
+
+\section{Finding Test Cases (find tsts)}
+
+\subsection{Technologies  Used}
+\begin{itemize}
+    \item popen
+    \item GNU find
+    \item C++ vectors
+\end{itemize}
+\subsection{Component  Overview}
+This component, uses the GNU find program to recursively find all of the filenames of the form *.tst. This includes all subdirectories. popen is used to capturethe output, and that ouput is placed into a vector of filnames.
+
+\subsection{Phase Overview}
+This component was designed and developed in the initial phase and was an integral part 1.0.0 functionality.
+
+%\subsection{ Architecture  Diagram}
+%It is important to build and maintain an architecture diagram.  However, it may 
+%be that a component is best described visually with a data flow diagram. 
+
+
+%\subsection{Data Flow Diagram}
+%It is important to build and maintain a data flow diagram.  However, it may be 
+%that a component is best described visually with an architecture diagram. 
+
+
+\subsection{Design Details}
+One small detail is that this function needs to deal with a troublesome character encoutnered at the end of the filenames. The code below demonstrates how this is done.
+
+\begin{lstlisting}
+    //removing that frustrating invisible character at the end of the strings
+    for(int i=0;i<tstfilelist.size();i++)
+    {
+        tstfilelist.at(i).replace(tstfilelist.at(i).end()-1,
+        tstfilelist.at(i).end(),"");
+    }
+\end{lstlisting}
+
+
+
+\section{Running the Student Program (runtests)}
+
+
+\subsection{Technologies  Used}
+\begin{itemize}
+    \item C++ vectors
+\end{itemize}
+
+\subsection{Component  Overview}
+The basic features of this component were designed in V1.0.0 to run a specified test case and check its output against the expected output.  In V2.0.0 this component has been modified to compile and test a specific program and all specified tests.
+\subsection{Phase Overview}
+This component was designed and developed in the initial phase and was an integral part 1.0.0 functionality.  This was later modified for multiple programs in V2.0.0.
+
+
+%\subsection{ Architecture  Diagram}
+%It is important to build and maintain an architecture diagram.  However, it may 
+%be that a component is best described visually with a data flow diagram. 
+
+
+%\subsection{Data Flow Diagram}
+%It is important to build and maintain a data flow diagram.  However, it may be 
+%that a component is best described visually with an architecture diagram. 
+
+
+\subsection{Design Details}
+In order to run the student program, a string is constructed and passed to the shell through the system() function. The results are stored in a temp file. The temp file and *.ans file are then passed to the component that compares them to see if the outputs match.
+
+\section{Checking the Output (filesequal)}
+
+\subsection{Technologies  Used}
+\begin{itemize}
+    \item C++ vectors
+\end{itemize}
+
+
+\subsection{Component  Overview}
+This component opens both files passed to it and checks if they are equivalent. It returns an answer of yes or no.
+
+\subsection{Phase Overview}
+This component was designed and developed in the initial phase and was an integral part 1.0.0 functionality.
+
+
+%\subsection{ Architecture  Diagram}
+%It is important to build and maintain an architecture diagram.  However, it may 
+%be that a component is best described visually with a data flow diagram. 
+
+
+%\subsection{Data Flow Diagram}
+%It is important to build and maintain a data flow diagram.  However, it may be 
+%that a component is best described visually with an architecture diagram. 
+
+
+\subsection{Design Details}
+This component checks the two files by reading their contents into vectors. First the length of the two vectors are compared, then if it passes that test, the lines are compared against each other. If both tests pass, the files are equivalent.
+
+\section{Finding Student Code (find\_students)}
+
+\subsection{Technologies  Used}
+\begin{itemize}
+\item C++ vectors
+\item Dirent directory file descriptors
+\end{itemize}
+
+\subsection{Component  Overview}
+This component searches for every student source file and adds it to the list of the programs to be compiled and executed
+
+\subsection{Phase Overview}
+This component was designed and developed second phase as an integral part of 2.0.0 functionality.
+
+\subsection{Design Details}
+This component is designed to recursively scan all sub-directories for any source files.
+\begin{lstlisting}
+while (entry = readdir(dir)) 
+  {
+    temp = entry->d_name;
+    if ( temp != "." && temp != ".." )
+    {
+      if ( temp[temp.size() - 1] != '~' )
+      {
+        int length = temp.length();
+        if ( (length > 4 && (temp.substr(length-4) == ".cpp")
+             || temp.substr(length-2) == ".C")
+             && level > 0 )
+        {
+          STUDENTVECTOR.push_back(directory + '/' + temp);
+        }
+        else if ( (length > 4 && (temp.substr(length-4) == ".cpp")
+             || temp.substr(length-2) == ".C")
+             && level == 0 )
+        {
+          if (GOLDCPP.empty())
+          {
+            GOLDCPP = directory + '/' + temp;
+          }
+        }
+        else
+        {
+          find_students(directory + '/' + temp, level + 1);
+        }
+      }
+    }
+  }
+\end{lstlisting}
+
+%\subsection{ Architecture  Diagram}
+%It is important to build and maintain an architecture diagram.  However, it may 
+%be that a component is best described visually with a data flow diagram. 
+
+
+%\subsection{Data Flow Diagram}
+%It is important to build and maintain a data flow diagram.  However, it may be 
+%that a component is best described visually with an architecture diagram. 
+
+\section{Individual Test Reports(writeindividualreport)}
+
+\subsection{Technologies  Used}
+\begin{itemize}
+\item C++ vectors
+\end{itemize}
+
+\subsection{Component  Overview}
+This component writes an individual report regarding each test as they happen in the current program's directory.
+
+\subsection{Phase Overview}
+This component was designed and developed second phase as an integral part of 2.0.0 functionality.
+
+\subsection{Design Details}
+This component will simply advise if a program has passed or failed a specific test.  After a critical fail, the remaining tests will not be ran or logged.
+
+
+\section{Grouped Test Reports(writefinaloutfile)}
+
+\subsection{Technologies  Used}
+\begin{itemize}
+\item C++ vectors
+\end{itemize}
+
+\subsection{Component  Overview}
+This component writes a final report regarding each program and their test successes as a percent or "FAILED" if a critical test was not passed.
+
+\subsection{Phase Overview}
+This component was designed and developed second phase as an integral part of 2.0.0 functionality.
+
+\subsection{Design Details}
+\begin{lstlisting}
+timeinfo = localtime (&rawtime);
+  strftime (buffer,16,"%m_%d_%H:%M:%S",timeinfo);
+  //string to hold the final output file name
+  string outfilename (buffer); //QQQ!!! Alex : just log and time //+ logprogname+"_"+buffer+".log";
+
+  outfilename = "log " + outfilename;
+
+  //opening final output file
+  ofstream fout;
+  fout.open(outfilename.c_str());
+\end{lstlisting}
+
+\section{Generated Test Case Files(generatetestcases)}
+
+\subsection{Technologies  Used}
+
+\subsection{Component  Overview}
+This component uses a text based menu to identify the user's requirements for a series of test files.  These are then tested against the truth generating program at the level of execution to derive all acceptable outputs.
+
+\subsection{Phase Overview}
+This component was designed and developed second phase as an integral part of 2.0.0 functionality.
+
+\subsection{Design Details}
+\begin{lstlisting}
+for (int j = 0; j < inserts; j +=1)
+      {
+        // threshold  offset to min   by random fraction   times the difference
+        //int inValue = (int) (min + ((double) rand() / RAND_MAX) * (max - min));
+        if (max != 1 && min != 0)
+        {
+          inValue = (int (min) + rand()) % int(max) + 1;
+        }
+        else
+        {
+          inValue = MININT + rand() + rand(); // Max at randmax, min at LONG_MIN
+        }
+
+        fout << (int) inValue << endl;
+      }
+\end{lstlisting}

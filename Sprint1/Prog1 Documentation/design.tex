@@ -1,0 +1,141 @@
+% !TEX root = SystemTemplate.tex
+\chapter{Design  and Implementation}
+This section is used to describe the design details for each of the major components 
+in the system.  This section is not brief and requires the necessary detail that 
+can be used by the reader to truly understand the architecture and implementation 
+details without having to dig into the code.    Sample algorithm: 
+ 
+
+\section{Compilation}
+Please use the included make file to update and rebuild your executable.
+
+\subsection{Technologies  Used}
+\begin{itemize}
+\item Uses the stdlib.h library to make a system call.
+\item C++ vectors
+\end{itemize}
+
+\subsection {Phase Overview}
+This component has been created for the initial deployment of V1.x
+
+\subsection{Design Details}
+\begin{itemize}
+\item Find the core name of the file name (trim extension)
+\item Construct command: g++ -o corename filename -g
+\item Make system call
+\end{itemize}
+
+\section{Directory Crawl }
+
+\subsection{Technologies  Used}
+\begin {itemize}
+\item Uses the dirent.h library.
+\item Uses C++ STL vectors
+\end {itemize}
+
+\subsection {Component Overview}
+This component uses C++ STL vectors to contain the list of test files (denoted by a '.tst' extension) needed to execute against a specified source file.  These are found by making recursive directory searches (see figure 4.1)
+
+\subsection {Phase Overview}
+This component has been created for the initial deployment of V1.x
+
+\subsection{Design Details}
+\begin{lstlisting}
+#include<dirent.h>
+#include <string>
+
+void ParseDirectory(string root)
+{  
+    string temp;
+
+    DIR *dir = opendir(root.c_str()); // open the current directory
+    struct dirent *entry;
+
+    if (!dir)
+    {
+        // not a directory
+        return;
+    }
+
+    while (entry = readdir(dir)) // notice the single '='
+    {
+        temp = entry->d_name;
+        if ( temp != "." )
+        {
+            if ( temp != ".." )
+            {
+                if ( temp[temp.size() - 1] != '~' )
+                {
+                    int length = temp.length();
+                    if ( length > 4 && temp[length-1] == 't' && temp[length-2] 
+                        == 's' && temp[length-3] == 't' && temp[length-4] == '.' )
+                    {
+                        TESTVECTOR.push_back(root+'/'+temp);
+                    }
+                    else
+                    {
+                        ParseDirectory(root+'/'+temp);
+                    }
+                }
+            }
+        }
+    }
+    
+    closedir(dir);
+
+}
+\end{lstlisting}
+Figure 4.1, Directory crawling for '.tst' filesS
+
+\section{Test Execution }
+
+\subsection{Technologies  Used}
+Uses the stdlib.h library to make system calls.\newline
+Uses a vector to hold test cases and their results.
+
+\subsection {Phase Overview}
+This component has been created for the initial deployment of V1.x
+
+\subsection{Design Details}
+ For each test case:
+\begin{itemize}
+\item Get input and output file names
+\item Execute program against test case
+\item Diff output file and expected answer file
+\item Determine pass/fail, add to vector
+\end{itemize}
+
+\section{Result Logging}
+
+\subsection{Technologies Used}
+Uses the ctime library to generate test run timestamps.\newline
+Uses a vector to store test results.
+
+\subsection{Design Details} 
+\begin{lstlisting}
+#include <ctime>
+#include <vector>
+
+void WriteLog(string prog)
+{
+    // make name / date log.
+    time_t now;
+    time(&now);
+    string currTime = ctime(&now);
+    string name = prog + " " + currTime.substr(0,currTime.length() - 2) + ".log";
+    ofstream log(name.c_str());
+
+    for (int i = 0; i < TESTVECTOR.size(); i+=1)
+    {
+        log << TESTVECTOR[i] << endl; // flush buffer as long strings
+    }
+
+    // now push stats
+    log << "            |" << endl;
+    log << "Bottom Line V" << endl;
+    log << "--------------------------------------------------------------------------------" << endl;
+
+    log << "Correct: " << CORRECTTESTS << "\nFailed: " << TESTVECTOR.size() - CORRECTTESTS << endl;
+    log << "Success Rate: " << CORRECTTESTS/ TESTVECTOR.size() * 100 << "%" << endl; 
+}
+\end{lstlisting}

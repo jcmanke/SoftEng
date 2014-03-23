@@ -1,0 +1,28 @@
+% !TEX root = SystemTemplate.tex
+
+\chapter{Release -- Setup -- Deployment}
+This section will contain any specific subsection regarding specifics in releasing, 
+setup, and/or deployment of the system. 
+
+
+\section{Deployment Information and Dependencies}
+\begin {itemize}
+\item Validate your linux installation has a current install of gcc (yum -install gcc / apt-get install gcc / emerge install gcc  / pacman -S gcc)
+\item (Optional / Troubleshooting) validate linux headers are installed (above package manager with the arguments: linux-headers-\$(uname -r))
+\end {itemize}
+
+
+
+\section{Setup Information}
+
+To setup this project, g++ is needed. The project is built with: \\
+g++ -o  tester tester.c
+\\
+The project is run by: \\
+./tester 
+
+\section{System  Versioning Information}
+When a working version of the project was developed, that version was put into a branch with a time stamp. 
+Additionally, every time a working bit of code was developed, it was put into the current branch with 
+a description of what was currently working.
+

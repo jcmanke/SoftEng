@@ -1,0 +1,17 @@
+% !TEX root = SystemTemplate.tex
+
+\chapter{Release -- Setup -- Deployment}
+
+The purpose of this section is to provide any particulars to the setup of a release build of Lounge Against The Machine's software.
+
+\section {Deployment Information and Dependencies}
+\begin {itemize}
+\item Validate your linux installation has a current install of gcc (yum -install gcc / apt-get install gcc / emerge install gcc  / pacman -S gcc)
+\item (Optional / Troubleshooting) validate linux headers are installed (above package manager with the arguments: linux-headers-\$(uname -r))
+\end {itemize}
+
+\section{Setup Information}
+Copy grade.C and the Makefile into the parent directory containing your target program's source code and test cases. Run make to compile the program. Then run the program with ./grade sourcefile
+
+\section {System Versioning Information}
+Whenever a working section of this project was complet and before the initial testing was complete, a version of 0.X where 'X' was a commit id from GitHub would be established.  After further revision and at release the versioning was changed to V1.X.  All further revisions are incouraged to continue to commit code and follow this versioning style.

@@ -1,0 +1,19 @@
+% !TEX root = SystemTemplate.tex
+
+\chapter{System  and Unit Testing}
+
+This section describes the approach taken with regard to system and unit testing. 
+
+\section{Overview}
+Provides a brief overview of the testing approach, testing frameworks, and general 
+how testing is/will be done to provide a measure of success for the system. 
+
+
+
+\section{Dependencies}
+The manufature of this software was designed to presume that all tests will be located at either the current directory level of execution or at any contained, non-hidden or write protected directories.  It furter assumes that there are only valid pairings of tests and answer files to validate the tested program's responses and will labeled respectively with '.tst' or '.ans'.  Finally, this program is only intended to be run on program source files that both compile and do not break execution (Exception, Segmentation Fault, et cetera).
+
+\section{Test Setup and Execution}
+The initial tests were constructed by our customer to fascilitate the design and development process.  All of these such tests were acompanied by accurate answer files.  However, as a test development system, additional test had to be made locally to test for failures outside of the scope of the customer as limits needed to be verified against values and data types.  All tests that caused any exception or segmentation fault were deemed unsatisfactory and were removed from further testing.
+
+These tests were logged through out the execution process and comprise the final log summary that is titled with a time stamp and the name of the program being tested.  A '.log' extension was also appended to illustrate that the file is infact log data from execution.

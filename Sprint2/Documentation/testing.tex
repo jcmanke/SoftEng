@@ -1,0 +1,20 @@
+% !TEX root = SystemTemplate.tex
+
+\chapter{System  and Unit Testing}
+
+This section describes the approach taken with regard to system and unit testing. 
+
+\section{Overview}
+This chapter will provide a breif overview of the testing approach, testing frameworks, 
+and how testing will be done to provide a measure of success for the system.
+
+\section{Dependencies}
+This program was written with the assumption that all test files to run against the user program are in the directory with the user program, or in a child directory of the initial directory.  With revision two, the assumption is that the truth generating program will be at the same directory level as execution and all programs to be tested will be in some sub-directory here under.  It also only processes tests with the extention .tst, and only runs and compiles programs written in c++.
+
+
+\section{Test Setup and Execution}
+The majority of the test cases were developed by the Customer, Dr. Logar. They included several simple programs that took input and produced an output, with test cases for desired input and correct output.   However, as a test development system, additional test had to be made locally to test for failures outside of the scope of the customer as limits needed to be verified against values and data types.  All tests that caused any exception or segmentation fault were deemed unsatisfactory and were removed from further testing
+
+Several of the programs were designed to fail in certian cases so that the development team could be sure that a program would display the correct passed/failed ratio. The team also tested different forms of the user program, and tested running the program from different directories. The point of this specific test was to make sure only tests contained within the directory or subdirectories where the user program resided would be run. 
+
+

@@ -1,0 +1,38 @@
+% !TEX root = SystemTemplate.tex
+
+\chapter{User Documentation}
+
+This section contains the basis for any end user documentation for the system and covers the basic steps for setup and use of the system. 
+
+%% \newpage  %%  if needed ...
+\section{User Guide}
+
+Key to propper execution of the automated tester Grade by Lounge Against The Machine is the specification of a program's source file to be tested and the placement of the test files.
+
+The run command from a command line if compiled with the included make file should be: ./grade $<$target to compile and test.cpp$>$\newline\newline
+
+**NOTE**\newline
+
+The source code to test need not be in the directory path that execution occurs at.\newline\newline
+
+All test files must be located at the current directory for execution (the '.' in the above './') or in any subsequent directory.  For example the /home/user1 location is acceptable for executing a test, as long as all files reside in /home/user1 or /home/user1/tests or /home/user1/anything\ but\ a\ test/.  Test files located out of path such as /temp/ will not be found.  \newline\newline
+Lounge Against The Machine and it's affiliates will not be liable (not be held responisble) for impropper use of this test suite.
+
+\subsection{Test Files}
+Files that contain the test cases are required to have '.tst' as an extension. The filename proceeding the extension will be the name of that test in the log file. These should be constructed to be the desired input to the program.
+
+\subsection{Answer Files}
+For each test case file a corresponding file is expected with the desired "True" output. This file must have the same name as the test case with an '.ans' extension.
+
+\subsection{Results}
+The results will be placed in a file named as the specified executed source, but with a .log extension and a date / time stamp in the directory of execution.
+
+%% \newpage  %%  if needed ...
+\section{Installation Guide}
+All instalation is handled by meeting the requisites for release or development environment and execution of the make file or "g++ -o grade grade.C"
+
+%% \newpage  %%  if needed ...
+\section{Programmer Manual}
+All instalation is handled by meeting the requisites for release or development environment and execution of the make file or "g++ -o grade grade.C"
+
+

@@ -895,6 +895,12 @@ void writefinaloutfile(vector<string> finaloutfilecontents)//QQQ!!! Alex : comme
 /****************************************************************************/
 void cleanup()
 {
+  // remove temp files
+  char buffer[1024];
+  getcwd(buffer,sizeof(buffer));
+  string location (buffer);
+  location =  "rm " + location + "/temp.txt";
+  system(location.c_str());
   STUDENTVECTOR.erase(STUDENTVECTOR.begin(), STUDENTVECTOR.end());
   TESTCASES.erase(TESTCASES.begin(), TESTCASES.end());  
 }

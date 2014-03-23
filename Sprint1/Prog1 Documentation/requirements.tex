@@ -1,0 +1,68 @@
+% !TEX root = SystemTemplate.tex
+\chapter{User Stories, Backlog and Requirements}
+\section{Overview}
+This section contains the overview for defined user stories, initial backlog and requirements as gathered from stakeholder meetings with Adam Meaney the Product owner of Lounge Against The Machine.
+
+\subsection {Scope}
+This section is intended to provide proof of concept data and function as a check-sheet for completion of task.
+
+\subsection {Purpose of Development}
+The purpose of this application is to assist in various users (likely professors, TA's and other staff at SDSMT) to perform automated testing on simplistic programs as submitted as source code to be compiled in a standard Linux environment with current GCC.
+
+\section{ Stakeholder Information}
+
+The main stakeholder for this program is Dr. Logar, but other stakeholders may include other computer science professors and TAs.
+
+\subsection{Customer or End User (Product Owner)}
+In his role as Product Owner, Adam Meaney was the liason between our team and Dr. Logar with the assistance of Alex Wulff.
+
+\subsection{Management or Instructor (Scrum Master)}
+As Scrum Master, Joe Manke assigned tasks and managed the Trello board. He also wrote documentation with the assistance of Alex Wulff.
+
+\subsection {Investors}
+The investors of this project will be both those that use this program for automated testing and future teams who will modify this program to suit further defined features.  Should this program fail to be properly coded or documented, successive teams will likely not be successful in making timely adjustments and additions.  As such attention to detail is paramount.
+
+\subsection{Developers --Testers}
+Alex Wulff was the Technical Lead, and shared development duties with Adam. All three members of the team participated in code review and testing.
+
+\section{Business Need}
+The program must be able to compile and execute another program given only the name of the source code file.\newline\newline
+The program must be able to find all test cases in the parent directory where the program is executed, and all of its child directories.\newline\newline
+The program must be able to determine success or failure of individual tests and record results.\newline\newline
+
+This program meets all of these needs. Program compilation and execution are handled using system calls. Test cases are found through a recursive directory crawl. Test success is determined by performing a diff between expected and actual output and recorded in a log file.
+
+\section{Requirements and Design Constraints}
+
+\subsection{System/Development Environment Requirements}
+The program must be written in C++ and is required to work on the MCS department's Linux boxes, using Fedora. This necessitated that the program be developed and tested in Linux.
+
+\subsection{Project  Management Methodology} 
+ 
+\begin{itemize}
+\item Trello will be used to keep track of the backlogs and sprint status.
+\item The development team and the primary stakeholder (Dr. Logar) will have access to the Sprint and Product Backlogs.
+\item The number of sprints and sprint length were left to the development team. We decided upon two one-week sprints.
+\item GitHub is the recommended source control.
+\end{itemize}
+
+\section{User Stories}
+\subsection{User Story \#1}
+As a user, I should be able to compile and execute a program by providing the source code.
+
+\subsection{User Story \#2} 
+As a user, I should be able to locate test cases in child directories.
+
+\subsection{User Story \#3} 
+As a user, I should be able to see individual and aggregate results of test cases.
+
+\subsection{User Story \#4}
+As a user, I should be able to run tests against a program multiple times without overwriting previous test results in the log.
+
+\subsection {Research or Proof of Concept Results}
+As testing environments are relatively commonplace in test-driven development and Agile, research is taken praesumo presumo.  Additional information regarding test cases and test suites can be found though IBM at \url{http://pic.dhe.ibm.com/infocenter/clmhelp/v4r0/index.jsp?topic=%2Fcom.ibm.rational.test.qm.doc%2Ftopics%2Fc_testcase_overview.html}
+
+\subsection {Supporting Material}
+This document might contain references or supporting material which should be documented 
+and discussed  either here if approprite or more often in the appendices at the end.  This material may have been provided by the stakeholders  
+or it may be material garnered from research tasks.

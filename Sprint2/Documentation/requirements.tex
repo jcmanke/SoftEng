@@ -1,0 +1,131 @@
+% !TEX root = SystemTemplate.tex
+\chapter{User Stories, Backlog and Requirements}
+\section{Overview}
+
+This section contains several user stories, a backlog, and a list of requirements, of
+both the project and the user, and the user's equiptment for using the project. This
+chapter will contain 
+details about each of the requirements and how the requirements are or will be 
+satisfied in the design and implementation of the system.
+
+The user stories are provided by the stakeholders.
+
+
+
+
+
+\subsection{Scope}
+
+This document will contain stakeholder information, initial user stories, requirements, and 
+proof of concept results.
+
+
+
+\subsection{Purpose of the System}
+The purpose of the product is to allow the user to run either pre-written tests or custom generated tests on a master directory containing the programs of their choosing, and to provide a log to the user of which tests passed and which tests failed, as well as a percentage reflecting the results of the test.  Any tests labled as "...\_crit.tst" will be evaluated first and if any such criticals fail, the current program will achieve 0 percent and will be reported as FAILED in the final log.
+
+\section{ Stakeholder Information}
+
+There are three main stakeholders who have an interest in the completion of this project;
+this would be Dr. Logar, the Customer, the members of the original and subesquent development teams (Kelsey Bellew, 
+Ryan Brown, Ryan Feather, Joseph Manke, Adam Meaney, and Alex Wulff).
+
+
+\subsection{Customer or End User (Product Owner)}
+The Product Owner was Ryan Brown and currently is Joseph Manke. The Product Owner in this case is responsible for getting project specifications from the Customer and keeping the team members up to date with the Customer's user stories. The Product Owner is also responsible for managing and prioritizing the product backlog.
+
+\subsection{Management or Instructor (Scrum Master)}
+The Scrum Master was Kelsey Bellew and is currently Adam Meaney, and will drive the Sprint Meetings, keep a log of meetings and schedules. She will also deal with any and all unforseen issues causing dilemmas to the completion of the project.
+
+\subsection{Investors}
+The investors in this case, will be the members of other teams. If this project is not complete, not well written, or has any obvious or unobvious flaws at the end of the firstsprint, the members of the team who continue on with this project will be forced to handlethe project as is.
+
+
+\subsection{Developers --Testers}
+The Developers of this project are the members of the development team. The development team will also be the testers for this project.
+
+
+\section{Business Need}
+This software enables an automated way to test a user's program. All programs need to be tested before they are presented to a manager, or before they are shipped out, or even before or after they are turned in as homework. This software gives the user an easier, faster way to run tests on their program.  
+
+\section{Requirements and Design Constraints}
+There are a several requirements and design constraints within this project. This section will discuss System Requirements, Network Requirements, Development Environment Requirements, and Project Management Methodology.
+
+
+\subsection{System  Requirements}
+The Linux operating system is a constraint of this project. This is because of the use of the system() function within the code, which uses specifically linux command line commands to achieve several outcomes, such as compiling and running the program. This project could have been written for Windows, but would require an implimentation of a different set of system commands or a series of \#define statements for function and include aliases.
+
+
+\subsection{Network Requirements}
+There are no network requirements. This project does not use the internet unless the program it is testing uses the internet.
+
+
+\subsection{Development Environment Requirements}
+There should not be any development environment requirements, other than a Linux operating system. However, this project has been tested on both Fedora, Arch, Gentoo and Ubuntu, on a number of different text and code editors. The only other requirement would be the avalibility of gcc.
+
+
+\subsection{Project  Management Methodology}
+The stakeholders might restrict how the project implementation will be managed.  There may be constraints on when design meetings will take place.  There might be restrictions on how often progress reports need to be provided and to whom. 
+ 
+\begin{itemize}
+\item Trello will be used to keep track of the backlogs and sprint status.
+\item The members of the team will have access to Sprint and Product Backlogs, as will the Customer.
+\item There will be three sprints encompassing this project.
+\item Sprint Cycles are three weeks.
+\item The source control used will be GitHub, and all members of the team and the Customer will have
+ access to the GitHub directory.
+\item Code shall not be updated unless it is compiling and completes a function.
+\end{itemize}
+
+\section{User Stories}
+This section is the result of discussions with the stakeholders with regard to the actual functional requirements of the software. The user stories will be used in the work breakdown structure to build tasks to fill the product backlog for implementation throught the sprints.
+
+This section will contain sub-sections to define and potentially provide a breakdown of the larger user stories into smaller user stories.
+
+
+
+\subsection{User Story \#1}
+(Sprint 1) The user wants to be able to enter their program into the testing program through command line.
+
+\subsubsection{User Story \#1 Breakdown}
+The program the user wants to be able to run will come in the form of code as opposed to an executable; this means that the program needs to be able to take this user given code and compile it. It also means that the user should not have to enter in any additional information or text past the initial run of the program. 
+
+\subsection{User Story \#2} 
+(Sprint 1) User wants to be able to include multiple test cases in multiple directories.
+
+\subsubsection{User Story \#2 Breakdown}
+The program must be able to run if the user wants to only include test cases in a single directory, but also if they want to include test cases in multiple directories. The user also wants to see the results of the test cases in a specific place in the directory, namely the same directory the main program is in. 
+
+\subsection{User Story \#3} 
+(Sprint 1) User wants to be able to see the percentage of tests passed.
+
+\subsubsection{User Story \#3 Breakdown}
+In order to tell at a glance, how well a program did at passing the tests, a percentage is calcualted and appended to the results displayed.
+
+\subsection{User Story \#4} 
+(Sprint 2) User wants to be able to test multiple programs as a group.
+
+\subsubsection{User Story \#4 Breakdown}
+This will facilitate a class like evaluation for easy grading and comparison of performance relative to the rest of the group.
+
+\subsection{User Story \#5} 
+(Sprint 2) User wants to be able to set minimum performance requirements with "critical tests".
+
+\subsubsection{User Story \#5 Breakdown}
+Such a provision enables a minimum performance standard to be achievable by each targeted program.
+
+\subsection{User Story \#6} 
+(Sprint 2) User wants to generate custom and random test cases and use a standard "correct" program to provide truth to compare other program's output to.
+
+\subsubsection{User Story \#6 Breakdown}
+The program needs a truth generating program to set the standard for all other programs.  Truth will be made by all new tests as generated by the tester.
+
+\section{Research or Proof of Concept Results}
+This section is reserved for the discussion centered on any research that needed to take place before full system design.  The research efforts may have led to the need to actually provide a proof of concept for approval by the stakeholders.  The proof of concept might even go to the extent of a user interface design or mockups. 
+
+
+\section{Supporting Material}
+
+
+This document might contain references or supporting material which should be documented and discussed  either here if approprite or more often in the appendices at the end.  This material may have been provided by the stakeholders  or it may be material garnered from research tasks.
+

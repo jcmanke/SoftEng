@@ -1,0 +1,15 @@
+
+Test Summary:
+
+student_3.cpp:  100%
+bad_student_1.cpp:  11.1111%
+student_4.cpp:  100%
+average.cpp:  100%
+bad_student_2.cpp:  11.1111%
+bad_student_1.cpp:  11.1111%
+student_4.cpp:  100%
+student_3.cpp:  100%
+bad_student_2.cpp:  11.1111%
+     Total # of tests ran:    81
+     Total # of tests passed: 49
+              Percent passed: 60.4938%
