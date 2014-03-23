@@ -726,12 +726,30 @@ int runtests(string prog, string specifictestcase)
   string progcomp = "g++ -o " + progname  + " " + prog_cpp;
   size_t found = prog_cpp.find_last_of("/\\");
 
-  //compile program to be tested
-  system(progcomp.c_str());
-
+  ifstream fileExists(progname.c_str());
+  if (!fileExists)
+  {
+    fileExists.close();
+    //compile program to be tested
+    system(progcomp.c_str());
+  }
+  else
+  {
+    fileExists.close();
+  }
   //temporary file used to compare results
   string tempfile = "temp.txt";
-  
+
+  string answerFile = specifictestcase.substr(0,specifictestcase.rfind(".tst"));
+  answerFile += ".ans";
+  fileExists.open(answerFile.c_str());
+  if (!fileExists)
+  {
+    fileExists.close();
+    // Per customer conversation, don't fail a test with no answer
+    return 0;
+  }
+  fileExists.close();
   /*building the string to run the program, adds the appropriate .tst file for
    input to the program and the temp#.txt file as the output of the program 
    being tested*/
