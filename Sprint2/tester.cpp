@@ -726,6 +726,7 @@ int runtests(string prog, string specifictestcase)
   string progcomp = "g++ -o " + progname  + " " + prog_cpp;
   size_t found = prog_cpp.find_last_of("/\\");
 
+  // QQQ!!! Alex : to save time, only compile if needed.
   ifstream fileExists(progname.c_str());
   if (!fileExists)
   {
@@ -742,6 +743,7 @@ int runtests(string prog, string specifictestcase)
 
   string answerFile = specifictestcase.substr(0,specifictestcase.rfind(".tst"));
   answerFile += ".ans";
+  // QQQ!!! Alex : verify there is an answer file
   fileExists.open(answerFile.c_str());
   if (!fileExists)
   {
