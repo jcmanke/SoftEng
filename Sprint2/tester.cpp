@@ -95,6 +95,7 @@ int MININT = -2147483647;
 vector<string> STUDENTVECTOR;
 vector<string> TESTCASES;
 string GOLDCPP;
+int TOTALPASSED;
 /****************************************************************************/
 
 /*********************************** main ***********************************/
@@ -107,7 +108,7 @@ int main(int argc, char* argv[])
   //holds each test and result on a separate line
   vector<string> finaloutfilecontents;
   finaloutfilecontents.clear();
-
+  TOTALPASSED = 0;
   //test for proper program usage from command line
   if(argc != 1) //QQQ!!! Alex: change to != 2
   {
@@ -199,14 +200,17 @@ int main(int argc, char* argv[])
 */
       int result = runtests(STUDENTVECTOR[h], TESTCASES.at(i));
       string current = TESTCASES.at(i);
-      if (result == 0 && !current.substr(current.length() - 8).compare("crit.tst") )
+      // failure on critical test
+      if (result == 0 && current.substr(current.length() - 8)
+                                .find("crit.tst") != -1 )
       {
         score = -1;
         break; // stop tests
       }
-      else 
+      if (result == 1)
       {
         score += 1;
+        TOTALPASSED +=1;
       }
       writeindividualreport(STUDENTVECTOR[h], TESTCASES.at(i), result);
     }
@@ -241,7 +245,7 @@ string Generate_Performance_Report(string file, int score, int total)
   }
   
   stringstream temp("");
-  double percent = (double) score / total;
+  double percent = ((double) score / total) * 100;
   temp << percent;
   return report + ":  " + temp.str() + "%";
 }
@@ -622,22 +626,30 @@ void find_students(string directory, int level)
           string insert = directory + '/' + temp;
           if (find(STUDENTVECTOR.begin(), 
               STUDENTVECTOR.end(), 
-              insert) == STUDENTVECTOR.end()) // if not found
+              insert) == STUDENTVECTOR.end() 
+              && level != 0) // if not found
           {
             STUDENTVECTOR.push_back(insert);
           }
-        }
-        else if ( (length > 4 && (temp.substr(length-4) == ".cpp")
-             || temp.substr(length-2) == ".C")
-             && level == 0 )
-        {
-          if (GOLDCPP.empty())
+          else if (find(STUDENTVECTOR.begin(),
+              STUDENTVECTOR.end(),
+              insert) == STUDENTVECTOR.end() 
+              && GOLDCPP.empty() 
+              && level == 0)
           {
             GOLDCPP = directory + '/' + temp;
           }
         }
-        else 
+        else
         {
+          if (GOLDCPP.empty()
+              && ((temp.substr(length-4) == ".cpp")
+              || temp.substr(length-2) == ".C")
+              && level == 0)
+          {
+            GOLDCPP = directory + '/' + temp;
+          }
+
           find_students(directory + '/' + temp, level + 1);
         }
       }
@@ -837,10 +849,7 @@ int filesequal(string file1name, string file2name)  // QQQ!!! Alex: used as bool
 /******************************************************************************/   
 void writefinaloutfile(vector<string> finaloutfilecontents)//QQQ!!! Alex : commented out new processing method
 //                               string progname, vector<string> finaloutfilecontents)
-{
-  //counter to calculate summary of tests
-  int totalpassed = 0;
-  
+{  
   //getting current date and time for filename
   time_t rawtime;
   struct tm * timeinfo;
@@ -862,20 +871,18 @@ void writefinaloutfile(vector<string> finaloutfilecontents)//QQQ!!! Alex : comme
   
   //writing the contents to the output file
   for(int i=0;i<finaloutfilecontents.size();i++)
-  {
-    //counting the number of passed tests for computing the summary
-    if(finaloutfilecontents.at(i).find("pass") != string::npos)
-      totalpassed++;
-      
+  {      
     fout << finaloutfilecontents.at(i) << endl;
   }
   
   //printing out the final summary of the tests to the output file
   fout <<  
-    "     Total # of tests ran:    " << finaloutfilecontents.size() << 
-  "\n     Total # of tests passed: " << totalpassed <<
+  "     Total # of tests ran:    " << 
+  TESTCASES.size()*STUDENTVECTOR.size() << 
+  "\n     Total # of tests passed: " << TOTALPASSED <<
   "\n              Percent passed: " << 
-  ((((float)totalpassed)*100)/finaloutfilecontents.size())  << "%" << endl;
+  (((float)TOTALPASSED)/(TESTCASES.size()*STUDENTVECTOR.size())) * 100 << 
+  "%" << endl;
   
   
   //closing the output file
