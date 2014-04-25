@@ -8,4 +8,4 @@ CFLAGS = -c
 OBJS = ProgramTester.cpp
 
 tester: ProgramTester.cpp
-	${CC} -lm ${OBJS} -o tester
+	${CC} -lm -g  ${OBJS} -o tester
