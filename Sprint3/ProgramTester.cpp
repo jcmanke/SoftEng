@@ -53,6 +53,9 @@ bool compile( string progName );
 void FinalLogWrite( std::ofstream &fout, string name, int numPassed, 
         int numTotal);
 void generateTestCases( string rootDir );
+void generateInts(int numberOfTests, int numberOfArgs);
+void generateFloats(int numberOfTests, int numberOfArgs);
+void generateStrings(int numberOfTests, int numberOfArgs);
 string get_time ();
 void menuLoop( string rootDir );
 bool run_diff ( string file1, string file2 );
@@ -246,7 +249,7 @@ void generateTestCases( string rootDir )
     {
         // Print menu for generating test cases too allow for
         // the options of integers or floats
-        cout << "\nType of test data?\n  1: Integer\n  2: Float\n 3: String\n";
+        cout << "\nType of test data?\n  1: Integer\n  2: Float\n  3: String\n";
         cout << "Selection: ";
         
         cin >> inputType;
@@ -307,6 +310,10 @@ void generateTestCases( string rootDir )
     else if ( inputType == "2" )
     {
 		generateFloats(numberOfTests, numberOfArgs);
+    }
+    else if ( inputType == "3" )
+    {
+        generateStrings(numberOfTests, numberOfArgs);
     }
     
     // run tests through golden cpp
@@ -439,6 +446,7 @@ void generateStrings(int numberOfTests, int numberOfArgs)
     {
 		cout << "Would you like exact length or variable length strings?" << endl;
         cout << "1. exact\n2. variable\n";
+        cout << "Selection: ";
         cin >> stringType;
 
 		notANumber = stringType.find_first_not_of("0123456789") != string::npos;
