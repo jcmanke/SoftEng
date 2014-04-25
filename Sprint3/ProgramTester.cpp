@@ -244,23 +244,22 @@ void generateTestCases( string rootDir )
     {
         // Print menu for generating test cases too allow for
         // the options of integers or floats
-        cout << "\nType of test data?\n  1: Integer\n  2: Float\n";
+        cout << "\nType of test data?\n  1: Integer\n  2: Float\n 3: String\n";
         cout << "Selection: ";
         
         cin >> inputType;
         
-        if( inputType != "1" && inputType != "2" )
+        if( inputType != "1" && inputType != "2" && inputType != "3")
         {
             cout << "Please enter a valid option" << endl;
         }
     
-    }while( inputType != "1" && inputType != "2" );
+    }while( inputType != "1" && inputType != "2" && inputType != "3");
     
     do
     {
         // Print menu for number of test cases created
-        cout << "\nWhat number of test cases would you like to " <<
-            "generate?\n";
+        cout << "\nWhat number of test cases would you like to generate?\n";
         
         cin >> inputNumber;
         // Make sure the input is a number
@@ -269,8 +268,7 @@ void generateTestCases( string rootDir )
         {
             cout << "Please enter a valid number:\n";
         }
-    }while( inputNumber.find_first_not_of("0123456789") != 
-        string::npos );
+    }while( inputNumber.find_first_not_of("0123456789") != string::npos );
     
     do
     {
@@ -285,8 +283,7 @@ void generateTestCases( string rootDir )
             cout << "Please enter a valid number:\n";
         }
         
-    }while( inputArgs.find_first_not_of("0123456789") != 
-        string::npos );
+    }while( inputArgs.find_first_not_of("0123456789") != string::npos );
     
     // change into the test folder
     testDir = rootDir + "/test";
@@ -342,6 +339,64 @@ void generateTestCases( string rootDir )
                 fout << static_cast <float> (rand()) /
                 (static_cast <float> (RAND_MAX/1000));
                 fout << endl;
+            }
+            fout.close();
+        }
+        
+    }
+    else if ( inputType == "3" )
+    {
+        // generate test cases for strings
+        
+        // get further input
+        int stringType = -1;
+        int maxLength = 1;
+        int randomLength;
+        char letter;
+        
+        do
+        {
+            cout << "Would you like exact length or variable length strings?" << endl;
+            cout << "1. exact\n2. variable\n";
+            cin >> stringType;
+        }while(stringType != 1 && stringType != 2);
+        
+        cout << "How long do you want the strings? (max 80) ";
+        cin >> maxLength;
+        
+        //generate strings
+        for(i = 0; i < numberOfTests; i++) 
+        {
+            sprintf( buffer, "%d", i);
+            filename = "Test_" + (string)buffer;
+            filename += ".tst";
+            fout.open( filename.c_str() );   
+            
+            for(j = 0; j < numberOfArgs; j++)
+            {
+                if(stringType == 1)
+                {
+                    for(int k = 0; k < maxLength; k++)
+                    {
+                        // all lowercase letters
+                        // a = 97, z = 122
+                        letter = (char) (rand() % 25 + 97);
+                        fout << letter; 
+                    }
+                    fout << endl;    
+                }
+                else
+                {
+                    randomLength = rand() % maxLength + 1;
+                    for(int k = 0; k < randomLength; k++)
+                    {
+                        // all lowercase letters
+                        // a = 97, z = 122
+                        letter = (char) (rand() % 25 + 97);
+                        fout << letter; 
+                    }
+                    fout << endl;  
+                }
             }
             fout.close();
         }
