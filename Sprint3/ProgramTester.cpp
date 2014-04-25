@@ -4,6 +4,7 @@
  *
  *  Authors: Colter Assman, Samuel Carroll, Shaun Gruenig
  *  Adventure Line Authors: Erik Hattervig, Andrew Koc, Jonathan Tomes
+ *  Lounge Against the Machine Authors: Joe Manke, Adam Meaney
  * CS470 - Software Engineering
  * Dr. Logar
  * March 24, 2014
@@ -216,6 +217,7 @@ void FinalLogWrite( std::ofstream &fout, string name, data_struct *rec )
 /******************************************************************************
  * @Function generateTestCases
  * @author Erik Hattervig
+ * @author Joe Manke
  * 
  * @Description:
  * Asks the user for the type of test data, the number of test cases to
@@ -223,7 +225,7 @@ void FinalLogWrite( std::ofstream &fout, string name, data_struct *rec )
  * the test cases in a GeneratedTests folder and then call for the test cases
  * for run through the golden program.
  *
- * @parm[in] rootDir - the path to the root directory
+ * @param[in] rootDir - the path to the root directory
  *
  *****************************************************************************/
 void generateTestCases( string rootDir )
@@ -249,36 +251,33 @@ void generateTestCases( string rootDir )
         
         cin >> inputType;
         
-        if( inputType != "1" && inputType != "2" && inputType != "3")
+		if( inputType != "1" && inputType != "2" && inputType != "3")
         {
-            cout << "Please enter a valid option" << endl;
+            cout << "Please enter a valid option." << endl;
         }
     
-    }while( inputType != "1" && inputType != "2" && inputType != "3");
+    }while( inputType != "1" && inputType != "2"  && inputType != "3");
     
     do
     {
         // Print menu for number of test cases created
-        cout << "\nWhat number of test cases would you like to generate?\n";
+        cout << "\nWhat number of test cases would you like to generate? ";
         
         cin >> inputNumber;
         // Make sure the input is a number
-        if ( inputNumber.find_first_not_of("0123456789") != 
-            string::npos )
+        if ( inputNumber.find_first_not_of("0123456789") != string::npos )
         {
-            cout << "Please enter a valid number:\n";
+            cout << "Please enter a valid number." << endl;
         }
     }while( inputNumber.find_first_not_of("0123456789") != string::npos );
     
     do
     {
         // Print Menu for number of arguments in each test case
-        cout << "\nWhat number of arguments would you like in each " <<
-        "test case?\n";
+        cout << "\nWhat number of arguments would you like in each test case?\n";
         cin >> inputArgs;
         
-        if ( inputArgs.find_first_not_of("0123456789") != 
-            string::npos )
+        if ( inputArgs.find_first_not_of("0123456789") != string::npos )
         {
             cout << "Please enter a valid number:\n";
         }
@@ -303,104 +302,11 @@ void generateTestCases( string rootDir )
     
     if( inputType == "1" )
     {
-        // generate test cases for integers
-        
-        for( i = 0 ; i < numberOfTests ; i++ )
-        {
-            sprintf( buffer, "%d", i);
-            filename = "Test_" + (string)buffer;
-            filename += ".tst";
-            fout.open( filename.c_str() );
-            
-            for( j = 0 ; j < numberOfArgs ; j++ )
-            {
-                // generate ints, maxed at 1000
-                fout << rand() % 1000;
-                fout << endl;
-            }
-            fout.close();
-        }
-        
+		generateInts(numberOfTests, numberOfArgs);
     }
     else if ( inputType == "2" )
     {
-        // generate test cases for floats
-        
-        for( i = 0 ; i < numberOfTests ; i++ )
-        {
-            sprintf( buffer, "%d", i);
-            filename = "Test_" + (string)buffer;
-            filename += ".tst";
-            fout.open( filename.c_str() );
-            
-            for( j = 0 ; j < numberOfArgs ; j++ )
-            {
-                // generate floats, maxed at 1000
-                fout << static_cast <float> (rand()) /
-                (static_cast <float> (RAND_MAX/1000));
-                fout << endl;
-            }
-            fout.close();
-        }
-        
-    }
-    else if ( inputType == "3" )
-    {
-        // generate test cases for strings
-        
-        // get further input
-        int stringType = -1;
-        int maxLength = 1;
-        int randomLength;
-        char letter;
-        
-        do
-        {
-            cout << "Would you like exact length or variable length strings?" << endl;
-            cout << "1. exact\n2. variable\n";
-            cin >> stringType;
-        }while(stringType != 1 && stringType != 2);
-        
-        cout << "How long do you want the strings? (max 80) ";
-        cin >> maxLength;
-        
-        //generate strings
-        for(i = 0; i < numberOfTests; i++) 
-        {
-            sprintf( buffer, "%d", i);
-            filename = "Test_" + (string)buffer;
-            filename += ".tst";
-            fout.open( filename.c_str() );   
-            
-            for(j = 0; j < numberOfArgs; j++)
-            {
-                if(stringType == 1)
-                {
-                    for(int k = 0; k < maxLength; k++)
-                    {
-                        // all lowercase letters
-                        // a = 97, z = 122
-                        letter = (char) (rand() % 25 + 97);
-                        fout << letter; 
-                    }
-                    fout << endl;    
-                }
-                else
-                {
-                    randomLength = rand() % maxLength + 1;
-                    for(int k = 0; k < randomLength; k++)
-                    {
-                        // all lowercase letters
-                        // a = 97, z = 122
-                        letter = (char) (rand() % 25 + 97);
-                        fout << letter; 
-                    }
-                    fout << endl;  
-                }
-            }
-            fout.close();
-        }
-        
+		generateFloats(numberOfTests, numberOfArgs);
     }
     
     // run tests through golden cpp
@@ -417,8 +323,7 @@ void generateTestCases( string rootDir )
         chdir( testDir.c_str() );
         // create the .ans file
         sprintf( buffer, "%d", i);
-        filename = "touch Test_" + (string)buffer;
-        filename += ".ans";
+        filename = "touch Test_" + (string)buffer + ".ans";
         command = "touch " + filename;
         system( command.c_str() );
         
@@ -431,6 +336,169 @@ void generateTestCases( string rootDir )
     }
 
     return;
+}
+
+/******************************************************************************
+ * @Function generateInts
+ * @author Erik Hattervig
+ * @author Joe Manke
+ * 
+ * @Description:
+ * Generates files filled with random integers with values from 0 to 1000.
+ *
+ * @param[in] numberOfTests - the number of test files to generate
+ * @param[in] numberOfArgs - the number of values per file
+ *
+ *****************************************************************************/
+void generateInts(int numberOfTests, int numberOfArgs)
+{
+	ofstream fout;
+	string fileName;
+	char * testNum;
+	int i, j;
+
+	for( i = 0 ; i < numberOfTests ; i++ )
+    {
+        sprintf( testNum, "%d", i);
+		fileName = "Test_" + (string)testNum + ".tst";
+        fout.open( fileName.c_str() );
+            
+        for( j = 0 ; j < numberOfArgs ; j++ )
+        {
+            // generate ints, maxed at 1000
+            fout << rand() % 1000;
+            fout << endl;
+        }
+        fout.close();
+    }
+
+}
+
+/******************************************************************************
+ * @Function generateFloats
+ * @author Erik Hattervig
+ * @author Joe Manke
+ * 
+ * @Description:
+ * Generates files filled with random floating point numbers with values from 
+ * 0.0 to 1000.0.
+ *
+ * @param[in] numberOfTests - the number of test files to generate
+ * @param[in] numberOfArgs - the number of values per file
+ *
+ *****************************************************************************/
+void generateFloats(int numberOfTests, int numberOfArgs)
+{
+	ofstream fout;
+	string fileName;
+	char * testNum;
+	int i, j;
+
+	for( i = 0 ; i < numberOfTests ; i++ )
+    {
+		sprintf( testNum, "%d", i);
+		fileName = "Test_" + (string)testNum + ".tst";
+        fout.open( fileName.c_str() );
+            
+        for( j = 0 ; j < numberOfArgs ; j++ )
+        {
+            // generate floats, maxed at 1000
+            fout << static_cast <float> (rand()) /
+            (static_cast <float> (RAND_MAX/1000));
+            fout << endl;
+        }
+        fout.close();
+    }
+}
+
+/******************************************************************************
+ * @Function generateStrings
+ * @author Joe Manke
+ * 
+ * @Description:
+ * Asks the user if they want exact or variable length strings, and the exact/
+ * maximum length of the strings. Then generates files filled with random
+ * strings of lowercase characters.
+ *
+ * @param[in] numberOfTests - the number of test files to generate
+ * @param[in] numberOfArgs - the number of values per file
+ *
+ *****************************************************************************/
+void generateStrings(int numberOfTests, int numberOfArgs)
+{
+	ofstream fout;
+	string fileName, stringType, stringLength;
+	char * testNum;
+	char letter;
+	int length, maxLength;
+	int i, j, k;
+	bool notANumber = false;
+
+	// determine exact or variable length
+	do
+    {
+		cout << "Would you like exact length or variable length strings?" << endl;
+        cout << "1. exact\n2. variable\n";
+        cin >> stringType;
+
+		notANumber = stringType.find_first_not_of("0123456789") != string::npos;
+		if (notANumber)
+        {
+            cout << "Please enter a valid number:\n";
+        }
+    }while(notANumber || (stringType != "1" && stringType != "2"));
+        
+	// determine length
+	do
+	{
+		cout << "How long do you want the strings? (max 80) ";
+		cin >> stringLength;
+
+		notANumber = stringLength.find_first_not_of("0123456789") != string::npos;
+		if(notANumber)
+        {
+            cout << "Please enter a valid number:\n";
+        }
+	}while(notANumber);
+
+	// convert input to integer
+	maxLength = atoi(stringLength.c_str());
+	if(maxLength > 80)
+	{
+		maxLength = 80;
+	}
+
+	//generate strings
+	for(i = 0; i < numberOfTests; i++)
+	{
+		//determine length
+		if(stringType == "1") //exact length
+		{
+			length = maxLength;
+		}
+		else //variable length
+		{
+			length = rand() % maxLength + 1;
+		}
+
+		sprintf( testNum, "%d", i);
+		fileName = "Test_" + (string)testNum + ".tst";
+        fout.open( fileName.c_str() );
+            
+        for( j = 0 ; j < numberOfArgs ; j++ )
+        {
+            for(k = 0; k < length; k++)
+			{
+				// all lowercase letters
+                // a = 97, z = 122
+                letter = (char) (rand() % 25 + 97);
+                fout << letter; 
+			}
+
+            fout << endl;
+        }
+        fout.close();
+	}
 }
 
 /******************************************************************************
