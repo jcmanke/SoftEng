@@ -479,22 +479,25 @@ void generateStrings(int numberOfTests, int numberOfArgs)
 	//generate strings
 	for(i = 0; i < numberOfTests; i++)
 	{
-		//determine length
-		if(stringType == "1") //exact length
-		{
-			length = maxLength;
-		}
-		else //variable length
-		{
-			length = rand() % maxLength + 1;
-		}
-
+	    //create file
 		sprintf( testNum, "%d", i);
 		fileName = "Test_" + (string)testNum + ".tst";
         fout.open( fileName.c_str() );
             
+        //create word
         for( j = 0 ; j < numberOfArgs ; j++ )
         {
+            //determine length
+		    if(stringType == "1") //exact length
+		    {
+			    length = maxLength;
+		    }
+		    else //variable length
+		    {
+			    length = rand() % maxLength + 1;
+		    }
+            
+            //generate letters
             for(k = 0; k < length; k++)
 			{
 				// all lowercase letters
