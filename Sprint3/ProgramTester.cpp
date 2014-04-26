@@ -29,6 +29,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <dirent.h>
 #include <unistd.h>
@@ -56,6 +57,9 @@ void generateTestCases( string rootDir );
 void generateInts(int numberOfTests, int numberOfArgs);
 void generateFloats(int numberOfTests, int numberOfArgs);
 void generateStrings(int numberOfTests, int numberOfArgs);
+void generateMenu(int numberOfTests, string rootDir, string testDir);
+bool stringEndsWith(string fullString, string ending);
+bool isAllDigits(string toCheck);
 string get_time ();
 void menuLoop( string rootDir );
 bool run_diff ( string file1, string file2 );
@@ -249,17 +253,18 @@ void generateTestCases( string rootDir )
     {
         // Print menu for generating test cases too allow for
         // the options of integers or floats
-        cout << "\nType of test data?\n  1: Integer\n  2: Float\n  3: String\n";
+        cout << "\nType of test data?\n  1: Integer\n  2: Float\n  3: String\n  4: Menu\n";
         cout << "Selection: ";
         
         cin >> inputType;
         
-		if( inputType != "1" && inputType != "2" && inputType != "3")
+		if( inputType != "1" && inputType != "2" && inputType != "3" && inputType != "4" )
         {
             cout << "Please enter a valid option." << endl;
         }
     
-    }while( inputType != "1" && inputType != "2"  && inputType != "3");
+    }while( inputType != "1" && inputType != "2" && inputType != "3" && inputType != "4" );
+    
     
     do
     {
@@ -268,24 +273,31 @@ void generateTestCases( string rootDir )
         
         cin >> inputNumber;
         // Make sure the input is a number
-        if ( inputNumber.find_first_not_of("0123456789") != string::npos )
+        if ( !isAllDigits(inputNumber) )
         {
             cout << "Please enter a valid number." << endl;
         }
-    }while( inputNumber.find_first_not_of("0123456789") != string::npos );
-    
-    do
-    {
-        // Print Menu for number of arguments in each test case
-        cout << "\nWhat number of arguments would you like in each test case?\n";
-        cin >> inputArgs;
-        
-        if ( inputArgs.find_first_not_of("0123456789") != string::npos )
+    }while( !isAllDigits(inputNumber) );
+     
+    numberOfTests = atoi( inputNumber.c_str() ); 
+     
+    if(inputType != "4")
+    {    
+        do
         {
-            cout << "Please enter a valid number:\n";
-        }
+            // Print Menu for number of arguments in each test case
+            cout << "\nWhat number of arguments would you like in each test case? ";
+            cin >> inputArgs;
+            
+            if ( !isAllDigits(inputArgs) )
+            {
+                cout << "Please enter a valid number:\n";
+            }
+            
+        }while( !isAllDigits(inputArgs) );
         
-    }while( inputArgs.find_first_not_of("0123456789") != string::npos );
+        numberOfArgs = atoi( inputArgs.c_str() );
+    }
     
     // change into the test folder
     testDir = rootDir + "/test";
@@ -298,11 +310,6 @@ void generateTestCases( string rootDir )
     testDir = testDir + "/GeneratedTests";
     chdir( testDir.c_str() );
     
-    // convert input to integers
-    numberOfTests = atoi( inputNumber.c_str() );
-    numberOfArgs = atoi( inputArgs.c_str() );
-    
-    
     if( inputType == "1" )
     {
 		generateInts(numberOfTests, numberOfArgs);
@@ -314,6 +321,10 @@ void generateTestCases( string rootDir )
     else if ( inputType == "3" )
     {
         generateStrings(numberOfTests, numberOfArgs);
+    }
+    else if ( inputType == "4" )
+    {
+        generateMenu(numberOfTests, rootDir, testDir);
     }
     
     // run tests through golden cpp
@@ -330,7 +341,7 @@ void generateTestCases( string rootDir )
         chdir( testDir.c_str() );
         // create the .ans file
         sprintf( buffer, "%d", i);
-        filename = "touch Test_" + (string)buffer + ".ans";
+        filename = "Test_" + (string)buffer + ".ans";
         command = "touch " + filename;
         system( command.c_str() );
         
@@ -449,7 +460,7 @@ void generateStrings(int numberOfTests, int numberOfArgs)
         cout << "Selection: ";
         cin >> stringType;
 
-		notANumber = stringType.find_first_not_of("0123456789") != string::npos;
+		notANumber = isAllDigits(stringType);
 		if (notANumber)
         {
             cout << "Please enter a valid number:\n";
@@ -462,7 +473,7 @@ void generateStrings(int numberOfTests, int numberOfArgs)
 		cout << "How long do you want the strings? (max 80) ";
 		cin >> stringLength;
 
-		notANumber = stringLength.find_first_not_of("0123456789") != string::npos;
+		notANumber = isAllDigits(stringLength);
 		if(notANumber)
         {
             cout << "Please enter a valid number:\n";
@@ -502,7 +513,7 @@ void generateStrings(int numberOfTests, int numberOfArgs)
 			{
 				// all lowercase letters
                 // a = 97, z = 122
-                letter = (char) (rand() % 25 + 97);
+                letter = (char) (rand() % 26 + 97);
                 fout << letter; 
 			}
 
@@ -510,6 +521,156 @@ void generateStrings(int numberOfTests, int numberOfArgs)
         }
         fout.close();
 	}
+}
+
+/******************************************************************************
+ * @Function generateMenu
+ * @author Joe Manke
+ * 
+ * @Description:
+ * Finds a .spec file and uses it to generate test cases for menu-driven 
+ * programs. Each line of the .spec file should be formatted as follows:
+ *  <menu option> {type = "int"|"double"}
+ *
+ * @param[in] numberOfTests - the number of test files to generate
+ * @param[in[ rootDir - the directory being tested, where the .spec file 
+ *                      is located
+ * @param[in] testDir - where to write the .tst file
+ *****************************************************************************/
+void generateMenu(int numberOfTests, string rootDir, string testDir)
+{
+    char cCurrentPath[FILENAME_MAX];
+    DIR * dir;
+    struct dirent* file;        //file entity struct from dirent.h
+    string fileName;
+    bool foundFlag = false;
+    string specFile, specLine, value;
+    ifstream fin;
+    ofstream fout;
+    char testNum[10];
+    int lastIndex, index;
+    
+    //start looking for the .spec file
+    chdir( rootDir.c_str() );
+    dir = opendir( rootDir.c_str() );
+    
+    while( ( file = readdir(dir) ) != NULL && !foundFlag )
+    {
+        //get file name
+        fileName = file -> d_name;
+        //skip over "." and ".."
+        if( fileName != "." && fileName != ".." )
+        {
+            //check if the file is a .spec file.
+            if( stringEndsWith(fileName, ".spec" ) )
+            {
+                specFile = rootDir + "/" + fileName;
+                foundFlag = true;
+            }
+        }
+    }
+    
+    //check to see if a .spec file was found at all.
+    if(!foundFlag)
+    {
+        cout << "Could not find a .spec file in: " << cCurrentPath << endl;
+        return;
+    }
+
+    //generate the tests
+    chdir( testDir.c_str() );
+    
+    for( int i = 0; i < numberOfTests; i++)
+    {
+        fin.open( specFile.c_str() );
+        
+		sprintf( testNum, "%d", i);
+		fileName = "Test_" + (string)testNum + ".tst";
+        fout.open( fileName.c_str() );
+        
+        while( getline(fin, specLine) )
+        {
+            lastIndex = 0;
+            
+            while( lastIndex < specLine.length() && lastIndex != string::npos )
+            {
+                index = specLine.find(" ", lastIndex);
+                
+                if(index == string::npos)
+                {
+                    break;
+                }
+                
+                value = specLine.substr(lastIndex, index - lastIndex);
+                
+                if( isAllDigits( value ) )
+                {
+                    fout << value;
+                }
+                else if ( value == "int" )
+                {
+                    fout << rand();
+                }
+                else if ( value == "double" )
+                {
+                    fout << (double) rand() / RAND_MAX;
+                }
+                
+                fout << " ";
+                
+                lastIndex = index + 1;
+            }
+            
+            fout << endl;
+        }
+        
+        fin.close();
+        fout.close();
+    }
+}
+
+/******************************************************************************
+ * @Function stringEndsWith
+ * @author Joe Manke
+ * 
+ * @Description:
+ * Determines if one string ends with another string. To be used for finding
+ * .cpp, .C, and .spec files. Based on code found at
+ * http://stackoverflow.com/questions/874134/find-if-string-endswith-another-string-in-c
+ *
+ * @param[in] fullString - the string being checked
+ * @param[in] ending - the string to check with
+ *
+ * @return bool - true if fullString ends with ending, false if not 
+ *****************************************************************************/
+bool stringEndsWith(string fullString, string ending)
+{
+    int fullLength = fullString.length();
+    int endLength = ending.length();
+    
+    if(fullLength >= endLength)
+    {
+        //check the last endLength characters for ending
+        return ( fullString.compare( fullLength - endLength, endLength, ending ) == 0);
+    }
+    
+    return false;
+}
+
+/******************************************************************************
+ * @Function isAllDigits
+ * @author Joe Manke
+ * 
+ * @Description:
+ * Determines if every character in a string is a digit.
+ *
+ * @param[in] toCheck - the string to check the contents of
+ *
+ * @return bool - true if all letters are digits, false if not
+ *****************************************************************************/
+bool isAllDigits(string toCheck)
+{
+    return ( toCheck.find_first_not_of("0123456789") == string::npos );
 }
 
 /******************************************************************************
