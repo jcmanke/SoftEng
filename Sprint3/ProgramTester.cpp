@@ -24,6 +24,7 @@
  *
 ******************************************************************************/
 
+int MAX_TIMEOUT = 60;
 
 /////////includes//////////////////////////////////////////////////////////////
 #include <iostream>
@@ -35,6 +36,8 @@
 #include <unistd.h>
 #include <fstream>
 #include <ctime>
+#include <sys/wait.h>
+#include <sys/types.h>
 
 using namespace std;
 
@@ -52,7 +55,7 @@ struct data_struct
 ///////////function prototypes/////////////////////////////////////////////////
 bool compile( string progName );
 void FinalLogWrite( std::ofstream &fout, string name, int numPassed, 
-        int numTotal);
+    int numTotal);
 void generateTestCases( string rootDir );
 void generateInts(int numberOfTests, int numberOfArgs);
 void generateFloats(int numberOfTests, int numberOfArgs);
@@ -69,6 +72,7 @@ void StudentLogWrite( std::ofstream &fout, string testName, bool passedStatus );
 void studentDirCrawl( string rootDir );
 void testCrawl( string testPath, string exePath, ofstream &studentLog, 
   data_struct *rec, string studentPath );
+void askForTimeout();
 
 /******************************************************************************
  *
@@ -705,7 +709,7 @@ string get_time ()
  * @author Erik Hatterivg
  *
  * @Description:
- * This function promps the user for a option, its options will include running
+ * This function prompts the user for a option, its options will include running
  * the program as normally, generating test cases, or exiting.
  *
  * @param[in] rootDir - A string containing a path to the root directory
@@ -726,7 +730,9 @@ void menuLoop( string rootDir )
 
         if( input == "1" )
         {
+            askForTimeout();
             // run the program as normal
+            cout << "Running tests, please wait." << endl;
             studentDirCrawl(rootDir);
         }
         else if( input == "2" )
@@ -842,6 +848,11 @@ bool RunTestCase(string exec, string test_case, string curr_dir,
 {
 	bool passed;
 	string outfilename, ansfilename, testname, command;
+	int pid = 0;
+	int wait_pid;
+	int status;
+	bool finished = false;
+	
 	
 	//increment number of tests found/ran
 	rec->total++;
@@ -862,7 +873,49 @@ bool RunTestCase(string exec, string test_case, string curr_dir,
                 + " 2>/dev/null";
 
     //run command to test program with current .tst file
-    system ( command.c_str() );
+    pid = fork();
+    if (pid < 0)
+    {
+        cout << "An error occurred while attempting to run student in " << student_dir << endl;
+        exit(-2);
+    }
+    else if (pid == 0)
+    {
+        // Child
+        //system ( command.c_str() );
+        execl("/bin/sh", "/bin/sh", "-c", command.c_str(), NULL);
+        exit(5);
+    }
+    else
+    {
+        // in parent, check for child exit
+        int timer = 0;
+
+        while (true)
+        {
+            // sleep one second and see if process is done
+            sleep (1);
+            timer++;
+            wait_pid = waitpid(pid, &status, WNOHANG);
+
+            // if process is done, break out of loop
+            if (wait_pid != 0)
+            {
+                finished = true;
+                break;
+            }
+
+            // if time limit exceeded, kill child process
+            if (timer >= MAX_TIMEOUT)
+            {
+                rec -> crit_failed = true;
+                finished = false;
+                kill(pid, 9);
+            }
+        }
+    }
+    
+    system(string("pkill -f " + exec).c_str());
 
 	//determine if the program passed
 	passed = run_diff(outfilename, ansfilename);
@@ -870,7 +923,7 @@ bool RunTestCase(string exec, string test_case, string curr_dir,
 	StudentLogWrite(log, testname, passed);
 	
 	//The program passed the test
-	if( passed )
+	if( passed == true && finished == true )
 	{
 		rec->passed++;
 	}
@@ -1058,4 +1111,18 @@ void testCrawl( string testPath, string exePath, ofstream &studentLog,
   }
   
   return;
+}
+
+void askForTimeout()
+{
+    char choice;
+    cout << "Do you want to change the timeout (Default: 60) y/n? ";
+    cin >> choice;
+    
+    if (choice == 'y' || choice == 'Y')
+    {
+        cout << "Timeout: ";
+        cin >> MAX_TIMEOUT;
+    }
+    
 }
