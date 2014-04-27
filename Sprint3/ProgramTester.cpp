@@ -248,7 +248,6 @@ void FinalLogWrite( std::ofstream &fout, string name, data_struct *rec )
  *
  * @param[in] rootDir - the path to the root directory
  *
- * @bug rootDir becomes null after returning from generateStrings
  *****************************************************************************/
 void generateTestCases( string rootDir )
 {
@@ -456,8 +455,6 @@ void generateFloats(int numberOfTests, int numberOfArgs)
  * @param[in] numberOfTests - the number of test files to generate
  * @param[in] numberOfArgs - the number of values per file
  *
- * @bug Upon returning from this function, rootDir is null in 
- * generateTestsCases()
  *****************************************************************************/
 void generateStrings(int numberOfTests, int numberOfArgs)
 {
