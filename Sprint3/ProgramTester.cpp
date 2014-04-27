@@ -72,6 +72,7 @@ int run_diff ( string file1, string file2 );
 bool RunTestCase(string exec, string test_case, string curr_dir, 
 	string student_dir, data_struct *rec, ofstream &log);
 void StudentLogWrite( std::ofstream &fout, string testName, int passedStatus );
+void run_gprof(string progName, ofstream &log);
 void studentDirCrawl( string rootDir );
 void testCrawl( string testPath, string exePath, ofstream &studentLog, 
   data_struct *rec, string studentPath );
@@ -144,7 +145,6 @@ bool compile( string progName )
     string cppFile;
     string command;
     
-    
     getcwd( cCurrentPath, sizeof(cCurrentPath) );
     //start looking for the cpp 
     dir = opendir( cCurrentPath );
@@ -172,17 +172,19 @@ bool compile( string progName )
         return false;
     }
     
+    //build compile command
+    //coverage flags first
+    command = "g++ -fprofile-arcs -ftest-coverage ";
+    
     //check to see if a program name was specified.
     if( !progName.empty() )
     {
-        command = "g++ -o " + progName + " " + cppFile;
-    }
-    else
-    {
-        command = "g++ " + cppFile;
+        command += "-o " + progName + " ";
     }
     
-    //add profiling flag
+    command += cppFile;
+    
+    //profiling flag
     command += " -pg";
     
     //execute the command.
@@ -882,8 +884,7 @@ bool RunTestCase(string exec, string test_case, string curr_dir,
     outfilename = student_dir + '/' + testname + ".out";
 
     //creates name for .ans file, including the full path
-    ansfilename = curr_dir + "/" +
-                    testname + ".ans";
+    ansfilename = curr_dir + "/" + testname + ".ans";
 
     //creates command string to run the .tst file
     command = exec + " < " + curr_dir
@@ -962,6 +963,45 @@ bool RunTestCase(string exec, string test_case, string curr_dir,
 
 	return passed;
 }
+
+void run_gprof(string progName, ofstream &log)
+{
+    string command, gprofFile;
+    string funcName, percent, temp;
+    ifstream fin;
+    int i;
+    
+    //run gprof
+    gprofFile = progName + ".gprof";
+    command = "gprof " + progName + " > " + gprofFile;
+    system( command.c_str() );
+    
+    
+    //parse out function names and percentages from .gprof file
+    fin.open( gprofFile.c_str() );
+    
+    //first 7 lines are header stuff
+    for(i = 0; i < 7; i++)
+    {
+        getline(fin, temp);
+    }
+    
+    log << "gprof results: " << endl;
+    
+    while( fin >> percent )
+    {
+        //don't want next 5 things
+        for(i = 0; i < 5; i++)
+        {
+            fin >> funcName;    
+        }
+        
+        log << funcName << " : " << percent << "%" << endl;
+    }
+    
+    fin.close();
+}
+
 
 /*******************************************************************************
  * @Function studentDirCrawl
@@ -1048,12 +1088,16 @@ void studentDirCrawl( string rootDir )
                 rec.total = 0;
                 
                 //call test function to find and run tests
-                testCrawl( rootDir + '/' + "test", progName, studentLog,
-                  &rec, studentDir );
+                testCrawl( rootDir + '/' + "test", progName, studentLog, &rec, studentDir );
 
+                
                 //Final log write and write to class log
                 FinalLogWrite(studentLog, studentName, &rec);
                 FinalLogWrite(classLog, studentName, &rec);
+                
+                //determine code coverage and performance, append to log
+	            run_gprof(studentName, studentLog);
+                
                 studentLog.close();
 
                 chdir( rootDir.c_str() );
@@ -1117,7 +1161,7 @@ void testCrawl( string testPath, string exePath, ofstream &studentLog,
             {
                 // check if the file has a .tst in it. String find returns 
                 //   string::npos if the substring cannot be found
-                if ( filename.find( ".tst" ) != string::npos )
+                if ( stringEndsWith(filename, ".tst" ) )
                 {
                     // pass the file onto the grader
                     RunTestCase( exePath, filename, testPath, studentPath, rec, studentLog );
