@@ -1,0 +1,22 @@
+% !TEX root = SystemTemplate.tex
+
+\chapter{Sprint Reports}
+
+\section{Sprint Report \#1}
+The testing function can traverse a directory looking for source code. Compile that code, then
+look for test cases and run the compiled code with the given test case outputting the result in a 
+new document. It can then compare that document with the expected results document and write
+to the log file if it passed or failed. Then it will continue looking for test cases until all the test cases
+in the root folder have been found. The tester will then write the total number of test cases passed,
+total failed and the percentage passed and failed.
+
+\section{Sprint Report \#2}
+
+Had to redo a lot of the code. Most of it wasn't split into seperate functions and some of it was
+misdocumented. After getting around that, we got it to travese the root directory, finding the
+student directories and testing them against the tests located in the test directory. It can generate random
+tests (the number of and data types specified by the user). Introduced a simple menu system to make it easier
+to generate then run tests. It will log the results of the testing each student into a student log located in their
+directory, and to a class log located in the root directory.
+
+\section{Sprint Report \#3}
