@@ -177,6 +177,9 @@ bool compile( string progName )
         command = "g++ " + cppFile;
     }
     
+    //add profiling flag
+    command += " -pg";
+    
     //execute the command.
     system( command.c_str() );
     
@@ -1093,24 +1096,20 @@ void testCrawl( string testPath, string exePath, ofstream &studentLog,
             if ( (int) file->d_type == 4 )
             {
                 // move into the sub-directory
-                testCrawl( testPath + '/' + filename, exePath,
-                studentLog, rec , studentPath );
+                testCrawl( testPath + '/' + filename, exePath, studentLog, rec , studentPath );
             }
-        else
-        {
-            // check if the file has a .tst in it. String find returns 
-            //   string::nops if the substring cannot be found
-            if ( filename.find( ".tst" ) != string::npos )
+            else
             {
-                // pass the file onto the grader
-                RunTestCase( exePath, filename, testPath, studentPath, rec,
-		        studentLog);
+                // check if the file has a .tst in it. String find returns 
+                //   string::npos if the substring cannot be found
+                if ( filename.find( ".tst" ) != string::npos )
+                {
+                    // pass the file onto the grader
+                    RunTestCase( exePath, filename, testPath, studentPath, rec, studentLog );
+                }
             }
-      }
-    } 
-  }
-  
-  return;
+        } 
+    }
 }
 
 void askForTimeout()
