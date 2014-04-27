@@ -30,6 +30,7 @@ int MAX_TIMEOUT = 60;
 #include <iostream>
 #include <stdlib.h>
 #include <cstdlib>
+#include <cmath>
 #include <cstring>
 #include <string>
 #include <dirent.h>
@@ -38,6 +39,8 @@ int MAX_TIMEOUT = 60;
 #include <ctime>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <algorithm>
+#include <sstream>
 
 using namespace std;
 
@@ -65,14 +68,16 @@ bool stringEndsWith(string fullString, string ending);
 bool isAllDigits(string toCheck);
 string get_time ();
 void menuLoop( string rootDir );
-bool run_diff ( string file1, string file2 );
+int run_diff ( string file1, string file2 );
 bool RunTestCase(string exec, string test_case, string curr_dir, 
 	string student_dir, data_struct *rec, ofstream &log);
-void StudentLogWrite( std::ofstream &fout, string testName, bool passedStatus );
+void StudentLogWrite( std::ofstream &fout, string testName, int passedStatus );
 void studentDirCrawl( string rootDir );
 void testCrawl( string testPath, string exePath, ofstream &studentLog, 
   data_struct *rec, string studentPath );
 void askForTimeout();
+bool manualDiff(string file1, string file2);
+bool testResults(string ansWord, string outWord);
 
 /******************************************************************************
  *
@@ -152,7 +157,7 @@ bool compile( string progName )
         if( filename != "." && filename != ".." )
         {
             //check if the file is a cpp file.
-            if( filename.find(".cpp") != string::npos )
+            if( stringEndsWith(filename, ".cpp") == true )
             {
                 cppFile = filename;
                 foundFlag = true;
@@ -766,34 +771,38 @@ void menuLoop( string rootDir )
  *	string file2 - file to be compared with file1
  *
  *  @Author: Samuel Carroll
+ *  @Author: Adam Meaney
  *
 ******************************************************************************/
 
-bool run_diff ( string file1, string file2 )
+int run_diff ( string file1, string file2 )
 {
     string command; //string that will hold the command
     int result; // result of the diff system function
 
     command = "diff "; // start by writing the diff name and space
+    command += "-w -i "; //options to ignore whitespace differences and case.
     command += file1; // first file we want to check
     command += " "; // space between the files
     command += file2; // second file we want to check
-    command += " > /dev/null"; // stops the diff function from writing to the
-    // console
+    command += " > /dev/null"; // dump output from screen
+    
+    // run the command function and save the result
+    result = system( command.c_str() );
 
-    result = system ( command.c_str ( ) ); // run the command function and save
-    // the result
+    if ( result == 0 ) // if we get a zero there is no difference between the files
+        return 1; // return true so we know the test passed
 
-    if ( !result ) // if we get a zero there is no difference between the files
-        return true; // return true so we know the test passed
-
-    else // if we don't get a zero there was a diffence between the files
-        return false; // return false if the test failed
+    if (manualDiff(file1, file2) == true)
+        return 2;
+    
+    return 0;
 } // end of run_diff function
 
 /******************************************************************************
  * @Function: StudentLogWrite
  * @Author: Jonathan Tomes
+ * @Author: Adam Meaney
  *
  * @Description:
  *  Prints the status of a test to the file stream. Status should be weather
@@ -801,14 +810,19 @@ bool run_diff ( string file1, string file2 )
  *
  * @param[in] fout - the stream to write to.
  * @param[in] testName - name of the test.
- * @param[in] passedStatus - true - test passed.
- *                          false - test failed.
+ * @param[in] passedStatus - 2 - test had a presentation error
+                            1 - test passed normally.
+ *                          0 - test failed.
 ******************************************************************************/
 
-void StudentLogWrite( std::ofstream &fout, string testName, bool passedStatus )
+void StudentLogWrite( std::ofstream &fout, string testName, int passedStatus )
 {
     fout << testName << ": ";
-    if(passedStatus)
+    if(passedStatus == 2)
+    {
+        fout << "Passed with presentation errors" << std::endl;
+    }
+    else if(passedStatus == 1)
     {
         fout << "Passed" << std::endl;
     }
@@ -824,6 +838,7 @@ void StudentLogWrite( std::ofstream &fout, string testName, bool passedStatus )
  * @Function RunTestCase
  * @Author Andrew Koc (Note some code was taken from find_tst written by
  *                       Colter Assman and Shaun Gruenig)
+ * @Author Adam Meaney
  * 
  * @Description:
  * This function will take a given .tst file, generate the names for the 
@@ -846,7 +861,7 @@ void StudentLogWrite( std::ofstream &fout, string testName, bool passedStatus )
 bool RunTestCase(string exec, string test_case, string curr_dir, 
 	string student_dir, data_struct *rec, ofstream &log)
 {
-	bool passed;
+	int passed;
 	string outfilename, ansfilename, testname, command;
 	int pid = 0;
 	int wait_pid;
@@ -918,12 +933,12 @@ bool RunTestCase(string exec, string test_case, string curr_dir,
     system(string("pkill -f " + exec).c_str());
 
 	//determine if the program passed
-	passed = run_diff(outfilename, ansfilename);
+	passed = run_diff(ansfilename, outfilename);
 
 	StudentLogWrite(log, testname, passed);
 	
 	//The program passed the test
-	if( passed == true && finished == true )
+	if( passed && finished == true )
 	{
 		rec->passed++;
 	}
@@ -1113,6 +1128,16 @@ void testCrawl( string testPath, string exePath, ofstream &studentLog,
   return;
 }
 
+/******************************************************************************
+ * @Fuction askForTimeout
+ * @author Adam Meaney
+ * 
+ * Description:
+ * This function prompts to change the timeout on the tests. It takes in a y
+ * for yes and an n for no. If yes, then it prompts to enter the new timeout
+ * and changes the global timeout variable.
+ *
+ *****************************************************************************/
 void askForTimeout()
 {
     char choice;
@@ -1125,4 +1150,96 @@ void askForTimeout()
         cin >> MAX_TIMEOUT;
     }
     
+}
+
+bool manualDiff(string file1, string file2)
+{
+    string ansWord = "";
+    string outWord = "";
+    
+    ifstream ansFin;
+    ifstream outFin;
+    bool success = true;
+    
+    ansFin.open(file1.c_str());
+    outFin.open(file2.c_str());
+    
+    if ( !ansFin || !outFin )
+    {
+        cout << "Catastrophic error, file disappeared during testing." << endl;
+        ansFin.close();
+        outFin.close();
+        exit(-5);
+    }
+    
+    while(ansFin >> ansWord)
+    {
+        if (!(outFin >> outWord))
+        {
+            success = false;
+            break;
+        }
+        if (ansWord != outWord)
+        {
+            //run the tests, break if they fail.
+            if (testResults(ansWord, outWord) == false)
+            {
+                success = false;
+                break;
+            }
+        }
+    }
+    
+    //Check for additional words in outFin
+    
+    if ((outFin >> outWord) && success == true)
+    {
+            success = false;
+    }
+    
+    return success;
+}
+
+bool testResults(string ansWord, string outWord)
+{
+    int ansLength = ansWord.length();
+    int outLength = outWord.length();
+    int precision;
+    double ansDub;
+    double outDub;
+    
+    istringstream ansStream;
+    istringstream outStream;
+    
+    ansStream.str(ansWord);
+    outStream.str(outWord);
+    
+    precision = ansWord.find(".", 0);
+    
+    if (precision > 0)
+    {
+        precision = ansLength - (precision + 1);
+        if ( (ansStream >> ansDub) && (outStream >> outDub) )
+        {       
+            ansDub *= pow(10, precision);
+            outDub *= pow(10, precision);
+            
+            if (int(ansDub) == int(outDub + .50000005))
+                return true;
+            else
+                return false;
+            
+        }
+    }
+    
+    if (ansWord[0] == outWord[0] && ansWord[ansLength - 1] == outWord[outLength - 1])
+        return true;
+        
+    sort(ansWord.begin(), ansWord.end());
+    sort(outWord.begin(), outWord.end());
+    
+    if (ansWord == outWord)
+        return true;
+    
+    return false;
 }
