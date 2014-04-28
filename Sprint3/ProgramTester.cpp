@@ -79,6 +79,7 @@ void testCrawl( string testPath, string exePath, ofstream &studentLog,
 void askForTimeout();
 bool manualDiff(string file1, string file2);
 bool testResults(string ansWord, string outWord);
+void run_gcov(string progName, ofstream &log);
 
 /******************************************************************************
  *
@@ -1002,6 +1003,48 @@ void run_gprof(string progName, ofstream &log)
     fin.close();
 }
 
+/*******************************************************************************
+ * @Function run_gcov
+ * @Author Adam Meaney
+ * 
+ * @Description:
+ * This function will take a given log file and write the code coverage found
+ * by gcov for the student for whom that log exists.
+ *
+ * @param[in] progName - the name of the program that was run
+ * @param[in] log - the log file to write to
+ *
+*******************************************************************************/
+void run_gcov(string progName, ofstream &log)
+{
+    string command = "";
+    char buffer[40] = {'\0'};
+    ifstream fin;
+
+    command += "gcov " + progName + " | grep \"Lines executed\" > gcovOutfile.g ";
+
+    system( command.c_str() ); 
+
+    fin.open("gcovOutfile.g");
+
+    fin.getline(buffer, 40);
+
+    command = buffer;
+
+    if (command.length() == 0)
+        log << "Coverage unable to be checked." << endl;
+    else
+    {
+        command = command.substr(0, command.find("%", 0) + 1);
+        log << command << endl;
+    }
+        
+    fin.close();
+    
+    remove("gcovOutfile.g");
+   
+}
+
 
 /*******************************************************************************
  * @Function studentDirCrawl
@@ -1097,6 +1140,8 @@ void studentDirCrawl( string rootDir )
                 
                 //determine code coverage and performance, append to log
 	            run_gprof(studentName, studentLog);
+                
+                run_gcov(studentName, studentLog);
                 
                 studentLog.close();
 
@@ -1195,6 +1240,15 @@ void askForTimeout()
     
 }
 
+/******************************************************************************
+ * @Fuction manualDiff
+ * @author Adam Meaney
+ * 
+ * Description:
+ * This function checks for differences between 2 files, after a normal diff
+ * has been run. Returns true if pass, false if fails diff.
+ *
+ *****************************************************************************/
 bool manualDiff(string file1, string file2)
 {
     string ansWord = "";
@@ -1243,6 +1297,21 @@ bool manualDiff(string file1, string file2)
     return success;
 }
 
+
+/******************************************************************************
+ * @Fuction testResults
+ * @author Adam Meaney
+ * 
+ * Description:
+ * This function takes 2 words and checks if they are the same word but in the
+ * incorrect order, 2 words that start and end the same, or a number that is 
+ * the same as the ansWord if rounded.
+ *
+ * param[in] ansWord - the word from the .ans file
+ * param[in] outWord - the word from the .out file
+ * returns success - if the words are ruled the same
+ *
+ *****************************************************************************/
 bool testResults(string ansWord, string outWord)
 {
     int ansLength = ansWord.length();
