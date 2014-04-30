@@ -19,11 +19,16 @@ root directory. It will then search through the test directory in the root to fi
 student programs. It will log the result of each test to a student log file located in the student directory, and
 the final result will be repeated in an overal class log located in the starting directory. If the student
 fails a test labeled "crit\_(something).tst" the student will immediately fail and no more testing will be done.
+Additionally, having code that loops past a certain threshold time will count as critically failing.
+The requirements for passing have expanded as follows: strings can now pass with the correct letters in the
+incorrect order, such as 'hello' and 'heoll' count the same. Also, words beginning and ending the same pass, 
+such as 'pompous' and 'pompuos'. Finally, numbers that the student's answer would round to the correct choice pass.
+Each log now contains performance analysis and code coverage statistics.
 
 Generate will then prompt for a number of test cases, the number of inputs per test, and finally a data type
 to use for each test. It will then create a sub-directory called "Generated" in the test sub-directory of the root
 where the program was prompted to go or started in. If it had previously created tests, it will clear the directory
-and create a new one and all new test cases.
+and create a new one and all new test cases. Now handles string test cases.
 
 Exit will exit the program.
 
@@ -38,4 +43,4 @@ Exit will exit the program.
 
 %% \newpage  %%  if needed ...
 \section{Programmer Manual}
-
+Intentionally left blank.
