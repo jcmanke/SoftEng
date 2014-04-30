@@ -1249,25 +1249,33 @@ void askForTimeout()
  * @Fuction manualDiff
  * @author Adam Meaney
  * 
- * Description:
+ * @Description:
  * This function checks for differences between 2 files, after a normal diff
- * has been run. Returns true if pass, false if fails diff.
+ * has been run and returned nonzero. 
+ *
+ * @param[in] file1 - .ans file
+ * @param[in] file2 - .out file
+ *
+ * @return true if pass with presentation errors, false if fails diff
  *
  *****************************************************************************/
 bool manualDiff(string file1, string file2)
 {
-    string ansWord = "";
-    string outWord = "";
+    string ansWord = ""; // Word from the answer file
+    string outWord = ""; // Word from the generated output file
     
     ifstream ansFin;
     ifstream outFin;
     bool success = true;
-    
+
+    // Open the files to read them in
     ansFin.open(file1.c_str());
     outFin.open(file2.c_str());
     
     if ( !ansFin || !outFin )
     {
+        // If either of the files failed to open, something is terribly wrong.
+        // We should have caught these errors earlier, but always good to test.
         cout << "Catastrophic error, file disappeared during testing." << endl;
         ansFin.close();
         outFin.close();
@@ -1276,27 +1284,29 @@ bool manualDiff(string file1, string file2)
     
     while(ansFin >> ansWord)
     {
+        // While the answer file still has words, try to get a word to compare.
         if (!(outFin >> outWord))
         {
-            success = false;
+            // If we cannot read a word from out when we have an answer word.
+            success = false;    // Make return value false, saying diff failed.
             break;
         }
         if (ansWord != outWord)
         {
-            //run the tests, break if they fail.
+            // If words are not already equal, compare them.
             if (testResults(ansWord, outWord) == false)
             {
+                // Run the tests, break if they fail.
                 success = false;
                 break;
             }
         }
     }
     
-    //Check for additional words in outFin
-    
     if ((outFin >> outWord) && success == true)
     {
-            success = false;
+        //Check for additional words in outFin
+        success = false;
     }
     
     return success;
@@ -1331,32 +1341,49 @@ bool testResults(string ansWord, string outWord)
     ansStream.str(ansWord);
     outStream.str(outWord);
     
-    precision = ansWord.find(".", 0);
+    precision = ansWord.find(".", 0); // If its possibly a double, find where
+                                      // the . is.
     
     if (precision > 0)
     {
+        // If there was a decimal point, find the actual precision.
         precision = ansLength - (precision + 1);
         if ( (ansStream >> ansDub) && (outStream >> outDub) )
-        {       
+        {
+            // If the words can be read as doubles, multiply to make the words
+            // have all the precision on the left side now, such as
+            // 12.456 turns to 12456       
             ansDub *= pow(10, precision);
             outDub *= pow(10, precision);
             
             if (int(ansDub) == int(outDub + .50000005))
+            {
+                // If the numbers now round to the same integer, pass.
                 return true;
+            }
             else
+            {
+                // Fail if not the same.
                 return false;
+            }
             
         }
     }
     
     if (ansWord[0] == outWord[0] && ansWord[ansLength - 1] == outWord[outLength - 1])
+    {
+        // If the words start and end the same, pass the tests.
         return true;
+    }
         
     sort(ansWord.begin(), ansWord.end());
     sort(outWord.begin(), outWord.end());
     
     if (ansWord == outWord)
+    {
+        // If the word is all there, just mispelled, return true.
         return true;
+    }
     
     return false;
 }
