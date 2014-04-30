@@ -7,6 +7,6 @@ CFLAGS = -c
 #OBJECT FILES
 OBJS = ProgramTester.cpp
 
-tester: ProgramTester.cpp
+test: ProgramTester.cpp
 
-	${CC} -g -lm ${OBJS} -o tester
+	${CC} -g -lm ${OBJS} -o test

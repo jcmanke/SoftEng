@@ -988,13 +988,18 @@ void run_gprof(string progName, ofstream &log)
     
     log << "gprof results: " << endl;
     
-    while( fin >> percent )
+    //when we hit "%" instead of a number, 
+    //we are done with the table of values
+    //and into description of values 
+    while( fin >> percent && percent != "%" )
     {
         //don't want next 5 things
         for(i = 0; i < 5; i++)
         {
-            fin >> funcName;    
+            fin >> temp;    
         }
+        
+        fin >> funcName;
         
         log << funcName << " : " << percent << "%" << endl;
     }
